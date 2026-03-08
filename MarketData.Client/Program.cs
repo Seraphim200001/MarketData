@@ -15,9 +15,38 @@ internal class Program
             .Get<GrpcSettings>() ?? new GrpcSettings();
 
         var modelConfigClient = new GrpcModelConfigClient(grpcSettings);
-        var availableInstruments = await modelConfigClient.GetConfiguredInstruments();
-
         var priceStreamer = new PriceStreamer(grpcSettings);
-        await priceStreamer.Start();
+
+        while (true)
+        {
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine($"Press (Ctrl+C) to exit.");
+            Console.WriteLine();
+
+            var availableInstruments = await modelConfigClient.GetConfiguredInstruments();
+            Console.WriteLine($"Available instruments: {string.Join(", ", availableInstruments)}");
+            
+            var sep = new string('=', 30);
+            Console.WriteLine($"Menu {sep}");
+            Console.WriteLine($"1. Add instrument");
+            Console.WriteLine($"2. View configurations");
+            Console.WriteLine($"3. Start price streaming");
+
+            Console.Write($">>> ");
+            var input = Console.ReadLine();
+            if(input == "1")
+            {
+                await modelConfigClient.AddInstrument();
+            }
+            else if (input == "2")
+            {
+                await modelConfigClient.GetConfiguredInstruments(printConfigs: true);
+            }
+            else if (input == "3")
+            {
+                await priceStreamer.Start();
+            }
+        }
     }
 }

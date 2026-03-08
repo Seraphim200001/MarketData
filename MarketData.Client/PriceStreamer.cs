@@ -32,14 +32,25 @@ internal class PriceStreamer : GrpcClientBase
         }
 
         Console.WriteLine($"\nSubscribing to: {string.Join(", ", request.Instruments)}");
-        Console.WriteLine("Waiting for price updates... (Press Ctrl+C to exit)\n");
+        Console.WriteLine("Waiting for price updates... (Press ESC to exit)\n");
 
         var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (sender, e) =>
+        _ = Task.Run(() =>
         {
-            e.Cancel = true;
-            cts.Cancel();
-        };
+            while (!cts.Token.IsCancellationRequested)
+            {
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(intercept: true);
+                    if (key.Key == ConsoleKey.Escape)
+                    {
+                        cts.Cancel();
+                        break;
+                    }
+                }
+                Thread.Sleep(100);
+            }
+        });
 
         try
         {
