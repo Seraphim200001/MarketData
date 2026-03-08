@@ -109,7 +109,7 @@ public class InstrumentModelManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task SwitchModelAsync_RaisesConfigurationChangedEvent()
+    public async Task SwitchModelAsync_RaisesEvent()
     {
         var instrument = new Instrument
         {
@@ -121,7 +121,7 @@ public class InstrumentModelManagerTests : IDisposable
         await _context.SaveChangesAsync();
 
         ModelConfigurationChangedEventArgs? eventArgs = null;
-        _manager.ConfigurationChanged += (sender, args) => eventArgs = args;
+        _manager.ModelSwitched += (sender, args) => eventArgs = args;
 
         await _manager.SwitchModelAsync("AAPL", "MeanReverting");
 
@@ -131,7 +131,7 @@ public class InstrumentModelManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task UpdateTickIntervalAsync_RaisesConfigurationChangedEvent()
+    public async Task TryRemoveInstrument_RaisesEvent()
     {
         var instrument = new Instrument
         {
@@ -143,7 +143,28 @@ public class InstrumentModelManagerTests : IDisposable
         await _context.SaveChangesAsync();
 
         ModelConfigurationChangedEventArgs? eventArgs = null;
-        _manager.ConfigurationChanged += (sender, args) => eventArgs = args;
+        _manager.InstrumentRemoved += (sender, args) => eventArgs = args;
+
+        await _manager.TryRemoveInstrument("AAPL");
+
+        Assert.NotNull(eventArgs);
+        Assert.Equal("AAPL", eventArgs.InstrumentName);
+    }
+
+    [Fact]
+    public async Task UpdateTickIntervalAsync_RaisesEvent()
+    {
+        var instrument = new Instrument
+        {
+            Name = "AAPL",
+            ModelType = "Flat",
+            TickIntervalMillieconds = 1000
+        };
+        _context.Instruments.Add(instrument);
+        await _context.SaveChangesAsync();
+
+        ModelConfigurationChangedEventArgs? eventArgs = null;
+        _manager.TickIntervalChanged += (sender, args) => eventArgs = args;
 
         await _manager.UpdateTickIntervalAsync("AAPL", 2000);
 
@@ -883,10 +904,10 @@ public class InstrumentModelManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task GetOrCreateInstrumentAsync_WithNewInstrument_RaisesConfigurationChangedEvent()
+    public async Task GetOrCreateInstrumentAsync_WithNewInstrument_RaisesEvent()
     {
         ModelConfigurationChangedEventArgs? eventArgs = null;
-        _manager.ConfigurationChanged += (_, args) => eventArgs = args;
+        _manager.InstrumentAdded += (_, args) => eventArgs = args;
 
         await _manager.GetOrCreateInstrumentAsync("NVDA", 1000, 500.0m, DateTime.UtcNow);
 
@@ -906,7 +927,7 @@ public class InstrumentModelManagerTests : IDisposable
         await _context.SaveChangesAsync();
 
         ModelConfigurationChangedEventArgs? eventArgs = null;
-        _manager.ConfigurationChanged += (_, args) => eventArgs = args;
+        _manager.InstrumentAdded += (_, args) => eventArgs = args;
 
         var (instrument, _) = await _manager.GetOrCreateInstrumentAsync("AAPL", 1000, 150.0m, DateTime.UtcNow);
 
