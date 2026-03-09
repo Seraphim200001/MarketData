@@ -145,7 +145,7 @@ public class InstrumentModelManagerTests : IDisposable
         ModelConfigurationChangedEventArgs? eventArgs = null;
         _manager.InstrumentRemoved += (sender, args) => eventArgs = args;
 
-        await _manager.TryRemoveInstrument("AAPL");
+        await _manager.TryRemoveInstrumentAsync("AAPL");
 
         Assert.NotNull(eventArgs);
         Assert.Equal("AAPL", eventArgs.InstrumentName);
@@ -998,6 +998,42 @@ public class InstrumentModelManagerTests : IDisposable
         Assert.Null(instrument.RandomMultiplicativeConfig);
         Assert.Null(instrument.MeanRevertingConfig);
         Assert.Null(instrument.RandomAdditiveWalkConfig);
+    }
+
+    [Fact]
+    public async Task GetInstrumentWithConfigurationsAsync_WithCancelledToken_ThrowsOperationCanceledException()
+    {
+        _context.Instruments.Add(new Instrument
+        {
+            Name = "AAPL",
+            ModelType = "Flat",
+            TickIntervalMillieconds = 1000
+        });
+        await _context.SaveChangesAsync();
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => _manager.GetInstrumentWithConfigurationsAsync("AAPL", cts.Token));
+    }
+
+    [Fact]
+    public async Task UpdateRandomMultiplicativeConfigAsync_WithCancelledToken_ThrowsOperationCanceledException()
+    {
+        _context.Instruments.Add(new Instrument
+        {
+            Name = "AAPL",
+            ModelType = "RandomMultiplicative",
+            TickIntervalMillieconds = 1000
+        });
+        await _context.SaveChangesAsync();
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => _manager.UpdateRandomMultiplicativeConfigAsync("AAPL", 0.03, 0.0002, cts.Token));
     }
 
     public void Dispose()

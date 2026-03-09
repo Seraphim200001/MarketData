@@ -19,22 +19,22 @@ public interface IInstrumentModelManager
     /// <summary>
     /// Gets an instrument with all its model configurations loaded
     /// </summary>
-    Task<Instrument?> GetInstrumentWithConfigurationsAsync(string instrumentName);
+    Task<Instrument?> GetInstrumentWithConfigurationsAsync(string instrumentName, CancellationToken ct = default);
 
     /// <summary>
     /// Loads all instruments with configurations and ensures they are properly initialized.
     /// Returns a dictionary mapping instrument name to loaded instrument.
     /// </summary>
-    Task<Dictionary<string, Instrument>> LoadAndInitializeAllInstrumentsAsync();
+    Task<Dictionary<string, Instrument>> LoadAndInitializeAllInstrumentsAsync(CancellationToken ct = default);
 
-    Task<int> UpdateTickIntervalAsync(string instrumentName, int tickIntervalMs); 
+    Task<int> UpdateTickIntervalAsync(string instrumentName, int tickIntervalMs, CancellationToken ct = default); 
 
     /// <summary>
     /// Switches the active model for an instrument.
     /// Automatically creates default configuration if it doesn't exist.
     /// </summary>
     /// <returns>The previous model type</returns>
-    Task<string?> SwitchModelAsync(string instrumentName, string newModelType);
+    Task<string?> SwitchModelAsync(string instrumentName, string newModelType, CancellationToken ct = default);
 
     /// <summary>
     /// Updates RandomMultiplicative configuration for an instrument
@@ -42,7 +42,8 @@ public interface IInstrumentModelManager
     Task<RandomMultiplicativeConfig> UpdateRandomMultiplicativeConfigAsync(
         string instrumentName,
         double standardDeviation,
-        double mean);
+        double mean,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Updates MeanReverting configuration for an instrument
@@ -52,14 +53,16 @@ public interface IInstrumentModelManager
         double mean,
         double kappa,
         double sigma,
-        double dt);
+        double dt,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Updates RandomAdditiveWalk configuration for an instrument
     /// </summary>
     Task<RandomAdditiveWalkConfig> UpdateRandomAdditiveWalkConfigAsync(
         string instrumentName,
-        string walkStepsJson);
+        string walkStepsJson,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Creates the appropriate price simulator for an instrument based on its model type and configuration
@@ -75,10 +78,11 @@ public interface IInstrumentModelManager
     /// value. The operation is asynchronous and may involve I/O or database access.</remarks>
     /// <param name="instrument">The instrument for which the model type validation and adjustment is performed.</param>
     /// <param name="context">The market data context that provides the environment and data necessary for validation.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains <see langword="true"/> if the model
     /// type was missing or unsupported and has been changed or defaulted; otherwise, <see langword="false"/> if no change was
     /// necessary and the existing model type was already supported.</returns>
-    Task<bool> EnsureModelTypeAsync(Instrument instrument, MarketDataContext context);
+    Task<bool> EnsureModelTypeAsync(Instrument instrument, MarketDataContext context, CancellationToken ct = default);
 
     /// <summary>
     /// Ensures that the model configuration for the specified instrument is present and correctly set up within the
@@ -88,8 +92,9 @@ public interface IInstrumentModelManager
     /// parameters are invalid or if the configuration process encounters an error.</remarks>
     /// <param name="instrument">The instrument for which to ensure model configuration. Cannot be null.</param>
     /// <param name="context">The market data context in which the model configuration is to be applied. Must be a valid context instance.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation to ensure the model configuration.</returns>
-    Task EnsureModelConfigurationAsync(Instrument instrument, MarketDataContext context);
+    Task EnsureModelConfigurationAsync(Instrument instrument, MarketDataContext context, CancellationToken ct = default);
 
     /// <summary>
     /// Seeds Instrument and Price data for a new instrument. 
@@ -100,10 +105,12 @@ public interface IInstrumentModelManager
     /// <param name="initialPriceValue">The initial price value</param>
     /// <param name="initialPriceTimestamp">The timestamp of the initial price</param>
     /// <param name="modelType">The model type to use, optional. Defaults to DefaultModelType.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A tuple containing the instrument and a boolean indicating if it was created</returns>
     Task<(Instrument instrument, bool created)> GetOrCreateInstrumentAsync(
         string instrumentName, int tickIntervalMs,
         decimal initialPriceValue, DateTime initialPriceTimestamp,
-        string? modelType = null);
-    Task<bool> TryRemoveInstrument(string instrumentName);
+        string? modelType = null,
+        CancellationToken ct = default);
+    Task<bool> TryRemoveInstrumentAsync(string instrumentName, CancellationToken ct = default);
 }

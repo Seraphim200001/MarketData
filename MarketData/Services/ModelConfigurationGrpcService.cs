@@ -53,7 +53,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
         {
             _logger.LogInformation("gRPC: GetConfigurations request for '{InstrumentName}'", request.InstrumentName);
 
-            var instrument = await _modelManager.GetInstrumentWithConfigurationsAsync(request.InstrumentName);
+            var instrument = await _modelManager.GetInstrumentWithConfigurationsAsync(
+                request.InstrumentName, context.CancellationToken);
 
             if (instrument == null)
             {
@@ -91,7 +92,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
                 throw new ArgumentException("Tick interval must be a positive integer");
             }
 
-            var updatedValue = await _modelManager.UpdateTickIntervalAsync(request.InstrumentName, request.TickIntervalMs);
+            var updatedValue = await _modelManager.UpdateTickIntervalAsync(
+                request.InstrumentName, request.TickIntervalMs, context.CancellationToken);
 
             if (updatedValue == request.TickIntervalMs)
             {
@@ -141,7 +143,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
 
             var previousModel = await _modelManager.SwitchModelAsync(
                 request.InstrumentName,
-                request.ModelType);
+                request.ModelType,
+                context.CancellationToken);
 
             return new SwitchModelResponse
             {
@@ -182,7 +185,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
             await _modelManager.UpdateRandomMultiplicativeConfigAsync(
                 request.InstrumentName,
                 request.StandardDeviation,
-                request.Mean);
+                request.Mean,
+                context.CancellationToken);
 
             return new UpdateConfigResponse
             {
@@ -225,7 +229,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
                 request.Mean,
                 request.Kappa,
                 request.Sigma,
-                request.Dt);
+                request.Dt,
+                context.CancellationToken);
 
             return new UpdateConfigResponse
             {
@@ -292,7 +297,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
 
             await _modelManager.UpdateRandomAdditiveWalkConfigAsync(
                 request.InstrumentName,
-                walkStepsJson);
+                walkStepsJson,
+                context.CancellationToken);
 
             return new UpdateConfigResponse
             {
@@ -325,7 +331,7 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
         try
         {
             _logger.LogInformation("gRPC: GetAllInstruments request");
-            var instruments = (await _modelManager.LoadAndInitializeAllInstrumentsAsync())
+            var instruments = (await _modelManager.LoadAndInitializeAllInstrumentsAsync(context.CancellationToken))
                 .Values;
             var response = new GetAllInstrumentsResponse();
             response.Configurations.AddRange(instruments.Select(BuildConfigurationResponse));
@@ -365,7 +371,8 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
                 request.TickIntervalMs,
                 (decimal)request.InitialPriceValue, 
                 initialPriceTimestamp,
-                request.ModelType);
+                request.ModelType,
+                context.CancellationToken);
 
             if (created)
             {
@@ -412,7 +419,7 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
         try
         {
             _logger.LogInformation("gRPC: Remove instrument request for '{InstrumentName}'", request.InstrumentName);
-            var removed = await _modelManager.TryRemoveInstrument(request.InstrumentName);
+            var removed = await _modelManager.TryRemoveInstrumentAsync(request.InstrumentName, context.CancellationToken);
             if (removed)
             {
                 _logger.LogInformation("Instrument '{InstrumentName}' removed successfully", request.InstrumentName);
