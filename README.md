@@ -301,6 +301,7 @@ service MarketDataService {
 service ModelConfigurationService {
     rpc GetAllInstruments(GetAllInstrumentsRequest) returns (GetAllInstrumentsResponse);
     rpc TryAddInstrument(TryAddInstrumentRequest) returns (TryAddInstrumentResponse);
+    rpc TryRemoveInstrument(TryRemoveInstrumentRequest) returns (TryRemoveInstrumentResponse);
     rpc GetSupportedModels(GetSupportedModelsRequest) returns (SupportedModelsResponse);
     rpc GetConfigurations(GetConfigurationsRequest) returns (ConfigurationsResponse);
     rpc UpdateTickInterval(UpdateTickIntervalRequest) returns (UpdateConfigResponse);
@@ -407,7 +408,7 @@ Note: Migrations are automatically applied in development environment. In produc
 
 #### gRPC API
 
-1. Call `TryAddInstrument` with new instrument name, tick interval, initial price, initial price, and optionally initial model type
+1. Call `TryAddInstrument` with new instrument name, tick interval and initial price, and optionally initial model type
 2. Server creates new instrument, seeds initial price.
 3. If no configuration provided, defaults to `Flat` (`const` hardcoded in `InstrumentModelManager`); otherwise, uses default parameters for the specified model type.
 4. Event is raised, background service hot reloads, new price stream starts immediately.
