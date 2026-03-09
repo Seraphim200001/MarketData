@@ -348,11 +348,37 @@ public class ModelConfigurationGrpcService : ModelConfigurationService.ModelConf
                 "Instrument {Instrument}, tick interval {TickIntervalMs}",
                 request.InstrumentName, request.TickIntervalMs);
 
+            // Validate instrument name
+            if (string.IsNullOrWhiteSpace(request.InstrumentName))
+            {
+                throw new ArgumentException("InstrumentName must be a non-empty, non-whitespace string.", nameof(request.InstrumentName));
+            }
+
+            // Validate tick interval (must be positive to avoid continuous ticking)
+            if (request.TickIntervalMs <= 0)
+            {
+                throw new ArgumentException("TickIntervalMs must be greater than zero.", nameof(request.TickIntervalMs));
+            }
+
+            // Validate and normalize initial price timestamp
+            var initialPriceTimestampTicks = request.InitialPriceTimestamp;
+            if (initialPriceTimestampTicks == 0)
+            {
+                throw new ArgumentException("InitialPriceTimestamp must be a valid non-zero ticks value.", nameof(request.InitialPriceTimestamp));
+            }
+
+            if (initialPriceTimestampTicks < DateTime.MinValue.Ticks || initialPriceTimestampTicks > DateTime.MaxValue.Ticks)
+            {
+                throw new ArgumentException("InitialPriceTimestamp is out of the valid DateTime range.", nameof(request.InitialPriceTimestamp));
+            }
+
+            var initialPriceTimestamp = new DateTime(initialPriceTimestampTicks, DateTimeKind.Utc);
+
             var (instrument, created) = await _modelManager.GetOrCreateInstrumentAsync(
                 request.InstrumentName, 
                 request.TickIntervalMs,
                 (decimal)request.InitialPriceValue, 
-                new DateTime(request.InitialPriceTimestamp),
+                initialPriceTimestamp,
                 request.ModelType);
 
             if (created)
