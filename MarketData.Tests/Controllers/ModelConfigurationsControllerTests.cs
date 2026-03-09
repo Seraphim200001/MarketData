@@ -41,10 +41,10 @@ public class ModelConfigurationsControllerTests
         };
 
         _mockModelManager
-            .Setup(m => m.GetInstrumentWithConfigurationsAsync("AAPL"))
+            .Setup(m => m.GetInstrumentWithConfigurationsAsync("AAPL", It.IsAny<CancellationToken>()))
             .ReturnsAsync(instrument);
 
-        var result = await _controller.GetConfigurations("AAPL");
+        var result = await _controller.GetConfigurations("AAPL", CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var json = JsonSerializer.Serialize(okResult.Value);
@@ -69,10 +69,10 @@ public class ModelConfigurationsControllerTests
     public async Task GetConfigurations_WithNonExistentInstrument_ReturnsNotFound()
     {
         _mockModelManager
-            .Setup(m => m.GetInstrumentWithConfigurationsAsync("NONEXISTENT"))
+            .Setup(m => m.GetInstrumentWithConfigurationsAsync("NONEXISTENT", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Instrument?)null);
 
-        var result = await _controller.GetConfigurations("NONEXISTENT");
+        var result = await _controller.GetConfigurations("NONEXISTENT", CancellationToken.None);
 
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
         Assert.Equal("Instrument 'NONEXISTENT' not found", notFoundResult.Value);
@@ -84,10 +84,10 @@ public class ModelConfigurationsControllerTests
         var request = new SwitchModelRequest("MeanReverting");
 
         _mockModelManager
-            .Setup(m => m.SwitchModelAsync("AAPL", "MeanReverting"))
+            .Setup(m => m.SwitchModelAsync("AAPL", "MeanReverting", It.IsAny<CancellationToken>()))
             .ReturnsAsync("RandomMultiplicative");
 
-        var result = await _controller.SwitchModel("AAPL", request);
+        var result = await _controller.SwitchModel("AAPL", request, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         var json = JsonSerializer.Serialize(okResult.Value);
@@ -108,10 +108,10 @@ public class ModelConfigurationsControllerTests
         var request = new SwitchModelRequest("InvalidModel");
 
         _mockModelManager
-            .Setup(m => m.SwitchModelAsync("AAPL", "InvalidModel"))
+            .Setup(m => m.SwitchModelAsync("AAPL", "InvalidModel", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("Invalid model type"));
 
-        var result = await _controller.SwitchModel("AAPL", request);
+        var result = await _controller.SwitchModel("AAPL", request, CancellationToken.None);
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Invalid model type", badRequestResult.Value);
@@ -123,10 +123,10 @@ public class ModelConfigurationsControllerTests
         var request = new SwitchModelRequest("Flat");
 
         _mockModelManager
-            .Setup(m => m.SwitchModelAsync("NONEXISTENT", "Flat"))
+            .Setup(m => m.SwitchModelAsync("NONEXISTENT", "Flat", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Instrument not found"));
 
-        var result = await _controller.SwitchModel("NONEXISTENT", request);
+        var result = await _controller.SwitchModel("NONEXISTENT", request, CancellationToken.None);
 
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
         Assert.Equal("Instrument not found", notFoundResult.Value);
@@ -143,10 +143,10 @@ public class ModelConfigurationsControllerTests
         };
 
         _mockModelManager
-            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("AAPL", 0.03, 0.0002))
+            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("AAPL", 0.03, 0.0002, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedConfig);
 
-        var result = await _controller.UpdateRandomMultiplicativeConfig("AAPL", request);
+        var result = await _controller.UpdateRandomMultiplicativeConfig("AAPL", request, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         var json = JsonSerializer.Serialize(okResult.Value);
@@ -169,10 +169,10 @@ public class ModelConfigurationsControllerTests
         var request = new UpdateRandomMultiplicativeRequest(-0.01, 0.0);
 
         _mockModelManager
-            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("AAPL", -0.01, 0.0))
+            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("AAPL", -0.01, 0.0, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("Standard deviation must be positive"));
 
-        var result = await _controller.UpdateRandomMultiplicativeConfig("AAPL", request);
+        var result = await _controller.UpdateRandomMultiplicativeConfig("AAPL", request, CancellationToken.None);
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Standard deviation must be positive", badRequestResult.Value);
@@ -184,10 +184,10 @@ public class ModelConfigurationsControllerTests
         var request = new UpdateRandomMultiplicativeRequest(0.02, 0.0);
 
         _mockModelManager
-            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("NONEXISTENT", 0.02, 0.0))
+            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("NONEXISTENT", 0.02, 0.0, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Instrument not found"));
 
-        var result = await _controller.UpdateRandomMultiplicativeConfig("NONEXISTENT", request);
+        var result = await _controller.UpdateRandomMultiplicativeConfig("NONEXISTENT", request, CancellationToken.None);
 
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
         Assert.Equal("Instrument not found", notFoundResult.Value);
@@ -206,10 +206,10 @@ public class ModelConfigurationsControllerTests
         };
 
         _mockModelManager
-            .Setup(m => m.UpdateMeanRevertingConfigAsync("TSLA", 150.0, 0.8, 3.0, 1.5))
+            .Setup(m => m.UpdateMeanRevertingConfigAsync("TSLA", 150.0, 0.8, 3.0, 1.5, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedConfig);
 
-        var result = await _controller.UpdateMeanRevertingConfig("TSLA", request);
+        var result = await _controller.UpdateMeanRevertingConfig("TSLA", request, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(result);
         var json = JsonSerializer.Serialize(okResult.Value);
@@ -234,10 +234,10 @@ public class ModelConfigurationsControllerTests
         var request = new UpdateMeanRevertingRequest(100.0, -0.5, 2.0, 1.0);
 
         _mockModelManager
-            .Setup(m => m.UpdateMeanRevertingConfigAsync("TSLA", 100.0, -0.5, 2.0, 1.0))
+            .Setup(m => m.UpdateMeanRevertingConfigAsync("TSLA", 100.0, -0.5, 2.0, 1.0, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("Kappa must be positive"));
 
-        var result = await _controller.UpdateMeanRevertingConfig("TSLA", request);
+        var result = await _controller.UpdateMeanRevertingConfig("TSLA", request, CancellationToken.None);
 
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal("Kappa must be positive", badRequestResult.Value);
@@ -249,10 +249,10 @@ public class ModelConfigurationsControllerTests
         var request = new UpdateMeanRevertingRequest(100.0, 0.5, 2.0, 1.0);
 
         _mockModelManager
-            .Setup(m => m.UpdateMeanRevertingConfigAsync("NONEXISTENT", 100.0, 0.5, 2.0, 1.0))
+            .Setup(m => m.UpdateMeanRevertingConfigAsync("NONEXISTENT", 100.0, 0.5, 2.0, 1.0, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Instrument not found"));
 
-        var result = await _controller.UpdateMeanRevertingConfig("NONEXISTENT", request);
+        var result = await _controller.UpdateMeanRevertingConfig("NONEXISTENT", request, CancellationToken.None);
 
         var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
         Assert.Equal("Instrument not found", notFoundResult.Value);
@@ -266,13 +266,13 @@ public class ModelConfigurationsControllerTests
         var request = new SwitchModelRequest(modelType);
 
         _mockModelManager
-            .Setup(m => m.SwitchModelAsync(instrumentName, modelType))
+            .Setup(m => m.SwitchModelAsync(instrumentName, modelType, It.IsAny<CancellationToken>()))
             .ReturnsAsync("RandomMultiplicative");
 
-        await _controller.SwitchModel(instrumentName, request);
+        await _controller.SwitchModel(instrumentName, request, CancellationToken.None);
 
         _mockModelManager.Verify(
-            m => m.SwitchModelAsync(instrumentName, modelType),
+            m => m.SwitchModelAsync(instrumentName, modelType, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -285,13 +285,13 @@ public class ModelConfigurationsControllerTests
         var request = new UpdateRandomMultiplicativeRequest(stdDev, mean);
 
         _mockModelManager
-            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync(instrumentName, stdDev, mean))
+            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync(instrumentName, stdDev, mean, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new RandomMultiplicativeConfig { StandardDeviation = stdDev, Mean = mean });
 
-        await _controller.UpdateRandomMultiplicativeConfig(instrumentName, request);
+        await _controller.UpdateRandomMultiplicativeConfig(instrumentName, request, CancellationToken.None);
 
         _mockModelManager.Verify(
-            m => m.UpdateRandomMultiplicativeConfigAsync(instrumentName, stdDev, mean),
+            m => m.UpdateRandomMultiplicativeConfigAsync(instrumentName, stdDev, mean, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -306,7 +306,7 @@ public class ModelConfigurationsControllerTests
         var request = new UpdateMeanRevertingRequest(mean, kappa, sigma, dt);
 
         _mockModelManager
-            .Setup(m => m.UpdateMeanRevertingConfigAsync(instrumentName, mean, kappa, sigma, dt))
+            .Setup(m => m.UpdateMeanRevertingConfigAsync(instrumentName, mean, kappa, sigma, dt, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new MeanRevertingConfig
             {
                 Mean = mean,
@@ -315,10 +315,47 @@ public class ModelConfigurationsControllerTests
                 Dt = dt
             });
 
-        await _controller.UpdateMeanRevertingConfig(instrumentName, request);
+        await _controller.UpdateMeanRevertingConfig(instrumentName, request, CancellationToken.None);
 
         _mockModelManager.Verify(
-            m => m.UpdateMeanRevertingConfigAsync(instrumentName, mean, kappa, sigma, dt),
+            m => m.UpdateMeanRevertingConfigAsync(instrumentName, mean, kappa, sigma, dt, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetConfigurations_WithCancelledToken_PropagatesCancellation()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        _mockModelManager
+            .Setup(m => m.GetInstrumentWithConfigurationsAsync("AAPL", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => _controller.GetConfigurations("AAPL", cts.Token));
+
+        _mockModelManager.Verify(
+            m => m.GetInstrumentWithConfigurationsAsync("AAPL", It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateRandomMultiplicativeConfig_WithCancelledToken_PropagatesCancellation()
+    {
+        var request = new UpdateRandomMultiplicativeRequest(0.03, 0.0002);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        _mockModelManager
+            .Setup(m => m.UpdateRandomMultiplicativeConfigAsync("AAPL", 0.03, 0.0002, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => _controller.UpdateRandomMultiplicativeConfig("AAPL", request, cts.Token));
+
+        _mockModelManager.Verify(
+            m => m.UpdateRandomMultiplicativeConfigAsync("AAPL", 0.03, 0.0002, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 }

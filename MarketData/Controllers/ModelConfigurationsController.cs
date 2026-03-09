@@ -22,9 +22,9 @@ public class ModelConfigurationsController : ControllerBase
     /// Get the current active model and all available configurations for an instrument
     /// </summary>
     [HttpGet("{instrumentName}")]
-    public async Task<ActionResult<object>> GetConfigurations(string instrumentName)
+    public async Task<ActionResult<object>> GetConfigurations(string instrumentName, CancellationToken ct)
     {
-        var instrument = await _modelManager.GetInstrumentWithConfigurationsAsync(instrumentName);
+        var instrument = await _modelManager.GetInstrumentWithConfigurationsAsync(instrumentName, ct);
 
         if (instrument == null)
         {
@@ -51,12 +51,12 @@ public class ModelConfigurationsController : ControllerBase
     [HttpPut("{instrumentName}/model")]
     public async Task<ActionResult> SwitchModel(
         string instrumentName,
-        [FromBody] SwitchModelRequest request)
+        [FromBody] SwitchModelRequest request,
+        CancellationToken ct)
     {
         try
         {
-            var previousModel = await _modelManager.SwitchModelAsync(instrumentName, request.ModelType);
-
+            var previousModel = await _modelManager.SwitchModelAsync(instrumentName, request.ModelType, ct);
             return Ok(new
             {
                 Message = "Model switched successfully. Changes are applied immediately.",
@@ -80,14 +80,16 @@ public class ModelConfigurationsController : ControllerBase
     [HttpPut("{instrumentName}/config/random-multiplicative")]
     public async Task<ActionResult> UpdateRandomMultiplicativeConfig(
         string instrumentName,
-        [FromBody] UpdateRandomMultiplicativeRequest request)
+        [FromBody] UpdateRandomMultiplicativeRequest request,
+        CancellationToken ct)
     {
         try
         {
             var config = await _modelManager.UpdateRandomMultiplicativeConfigAsync(
                 instrumentName,
                 request.StandardDeviation,
-                request.Mean);
+                request.Mean,
+                ct);
 
             return Ok(new
             {
@@ -111,7 +113,8 @@ public class ModelConfigurationsController : ControllerBase
     [HttpPut("{instrumentName}/config/mean-reverting")]
     public async Task<ActionResult> UpdateMeanRevertingConfig(
         string instrumentName,
-        [FromBody] UpdateMeanRevertingRequest request)
+        [FromBody] UpdateMeanRevertingRequest request,
+        CancellationToken ct)
     {
         try
         {
@@ -120,7 +123,8 @@ public class ModelConfigurationsController : ControllerBase
                 request.Mean,
                 request.Kappa,
                 request.Sigma,
-                request.Dt);
+                request.Dt,
+                ct);
 
             return Ok(new
             {

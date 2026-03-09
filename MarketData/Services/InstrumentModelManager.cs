@@ -74,7 +74,8 @@ public class InstrumentModelManager : IInstrumentModelManager
     public async Task<(Instrument instrument, bool created)> GetOrCreateInstrumentAsync(
         string instrumentName, int tickIntervalMs,
         decimal initialPriceValue, DateTime initialPriceTimestamp, 
-        string? modelType = null)
+        string? modelType = null,
+        CancellationToken ct = default)
     {
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MarketDataContext>();
@@ -83,7 +84,7 @@ public class InstrumentModelManager : IInstrumentModelManager
             .Include(i => i.MeanRevertingConfig)
             .Include(i => i.FlatConfig)
             .Include(i => i.RandomAdditiveWalkConfig)
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
         if (instrument == null)
         {
             _logger.LogInformation("Creating new instrument: {InstrumentName}", instrumentName);
@@ -115,14 +116,14 @@ public class InstrumentModelManager : IInstrumentModelManager
             };
             context.Prices.Add(price);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(ct);
 
             // Ensure default model type and configuration are set for the new instrument
             // This will also handle the case where an invalid model type was provided by setting it to default
-            await EnsureModelTypeAsync(instrument, context);
+            await EnsureModelTypeAsync(instrument, context, ct);
 
             // If the model type is valid, the *default* configuration will be created for that model type
-            await EnsureModelConfigurationAsync(instrument, context);
+            await EnsureModelConfigurationAsync(instrument, context, ct);
 
             OnInstrumentAdded(instrumentName); // Notify that a new instrument has been added
 
@@ -135,19 +136,19 @@ public class InstrumentModelManager : IInstrumentModelManager
         }
     }
 
-    public async Task<bool> TryRemoveInstrument(string instrumentName) 
+    public async Task<bool> TryRemoveInstrumentAsync(string instrumentName, CancellationToken ct = default) 
     {         
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MarketDataContext>();
         var instrument = await context.Instruments
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
         if (instrument == null)
         {
             _logger.LogWarning("Attempted to remove non-existent instrument '{InstrumentName}'", instrumentName);
             return false;
         }
         context.Instruments.Remove(instrument);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
         _logger.LogInformation("Removed instrument '{InstrumentName}'", instrumentName);
         OnInstrumentRemoved(instrumentName); // Notify that the instrument has been removed
         return true;
@@ -159,7 +160,10 @@ public class InstrumentModelManager : IInstrumentModelManager
     /// <param name="instrument">The instrument to check and update</param>
     /// <param name="context">Database context to save changes</param>
     /// <returns>True if the model type was changed, false otherwise</returns>
-    public async Task<bool> EnsureModelTypeAsync(Instrument instrument, MarketDataContext context)
+    public async Task<bool> EnsureModelTypeAsync(
+        Instrument instrument, 
+        MarketDataContext context,
+        CancellationToken ct = default)
     {
         var supportedModelTypes = GetSupportedModelTypes();
         if (string.IsNullOrWhiteSpace(instrument.ModelType) || !supportedModelTypes.Contains(instrument.ModelType))
@@ -170,7 +174,7 @@ public class InstrumentModelManager : IInstrumentModelManager
                 instrument.Name, DefaultModelType);
 
             instrument.ModelType = DefaultModelType;
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(ct);
 
             return true;
         }
@@ -202,7 +206,8 @@ public class InstrumentModelManager : IInstrumentModelManager
     /// Loads all instruments with configurations and ensures they are properly initialized.
     /// This is an efficient batch operation that uses a single DbContext.
     /// </summary>
-    public async Task<Dictionary<string, Instrument>> LoadAndInitializeAllInstrumentsAsync()
+    public async Task<Dictionary<string, Instrument>> LoadAndInitializeAllInstrumentsAsync(
+        CancellationToken ct = default)
     {
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MarketDataContext>();
@@ -212,13 +217,13 @@ public class InstrumentModelManager : IInstrumentModelManager
             .Include(i => i.MeanRevertingConfig)
             .Include(i => i.FlatConfig)
             .Include(i => i.RandomAdditiveWalkConfig)
-            .ToListAsync();
-
+            .ToListAsync(ct);
+            
         // Ensure all instruments are properly configured using the same context
         foreach (var instrument in instruments)
         {
-            await EnsureModelTypeAsync(instrument, context);
-            await EnsureModelConfigurationAsync(instrument, context);
+            await EnsureModelTypeAsync(instrument, context, ct);
+            await EnsureModelConfigurationAsync(instrument, context, ct);
         }
 
         return instruments.ToDictionary(i => i.Name, i => i);
@@ -228,7 +233,10 @@ public class InstrumentModelManager : IInstrumentModelManager
     /// Ensures the instrument has a configuration for its current model type.
     /// Creates a default configuration if missing.
     /// </summary>
-    public async Task EnsureModelConfigurationAsync(Instrument instrument, MarketDataContext context)
+    public async Task EnsureModelConfigurationAsync(
+        Instrument instrument, 
+        MarketDataContext context,
+        CancellationToken ct = default)
     {
         var configExists = instrument.ModelType switch
         {
@@ -245,14 +253,15 @@ public class InstrumentModelManager : IInstrumentModelManager
                 "Instrument '{InstrumentName}' is set to model '{ModelType}' but has no configuration. Creating default configuration.",
                 instrument.Name, instrument.ModelType);
 
-            await CreateDefaultConfigurationAsync(instrument, context);
+            await CreateDefaultConfigurationAsync(instrument, context, ct);
         }
     }
 
     /// <summary>
     /// Gets an instrument with all its model configurations loaded
     /// </summary>
-    public async Task<Instrument?> GetInstrumentWithConfigurationsAsync(string instrumentName)
+    public async Task<Instrument?> GetInstrumentWithConfigurationsAsync(
+        string instrumentName, CancellationToken ct = default)
     {
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MarketDataContext>();
@@ -262,14 +271,15 @@ public class InstrumentModelManager : IInstrumentModelManager
             .Include(i => i.MeanRevertingConfig)
             .Include(i => i.FlatConfig)
             .Include(i => i.RandomAdditiveWalkConfig)
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
     }
 
 
     /// <summary>
     /// Creates a default configuration for the instrument's current model type
     /// </summary>
-    private static async Task CreateDefaultConfigurationAsync(Instrument instrument, MarketDataContext context)
+    private static async Task CreateDefaultConfigurationAsync(
+        Instrument instrument, MarketDataContext context, CancellationToken ct = default)
     {
         switch (instrument.ModelType)
         {
@@ -283,7 +293,7 @@ public class InstrumentModelManager : IInstrumentModelManager
                     .Where(p => p.Instrument == instrument.Name)
                     .OrderByDescending(p => p.Timestamp)
                     .Select(p => p.Value)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(ct);
                 var mean = lastPrice == default ? 100d : (double)lastPrice; // Use last price as mean if available
                 context.MeanRevertingConfigs.Add(
                     DefaultModelConfigFactory.CreateMeanRevertingConfig(instrument.Id, mean));
@@ -299,10 +309,10 @@ public class InstrumentModelManager : IInstrumentModelManager
                 break;
         }
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
 
         // Reload the navigation property
-        await context.Entry(instrument).ReloadAsync();
+        await context.Entry(instrument).ReloadAsync(ct);
     }
 
     /// <summary>
@@ -310,7 +320,8 @@ public class InstrumentModelManager : IInstrumentModelManager
     /// Automatically creates default configuration if it doesn't exist.
     /// </summary>
     /// <returns>The previous model type</returns>
-    public async Task<string?> SwitchModelAsync(string instrumentName, string newModelType)
+    public async Task<string?> SwitchModelAsync(
+        string instrumentName, string newModelType, CancellationToken ct = default)
     {
         if (!IsValidModelType(newModelType))
         {
@@ -327,7 +338,7 @@ public class InstrumentModelManager : IInstrumentModelManager
             .Include(i => i.MeanRevertingConfig)
             .Include(i => i.FlatConfig)
             .Include(i => i.RandomAdditiveWalkConfig)
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
 
         if (instrument == null)
         {
@@ -338,9 +349,9 @@ public class InstrumentModelManager : IInstrumentModelManager
         instrument.ModelType = newModelType;
 
         // Ensure configuration exists for the new model type
-        await EnsureModelConfigurationAsync(instrument, context);
+        await EnsureModelConfigurationAsync(instrument, context, ct);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
 
         _logger.LogInformation(
             "Model switched for instrument '{InstrumentName}' from '{PreviousModel}' to '{NewModel}'",
@@ -358,7 +369,8 @@ public class InstrumentModelManager : IInstrumentModelManager
     public async Task<RandomMultiplicativeConfig> UpdateRandomMultiplicativeConfigAsync(
         string instrumentName,
         double standardDeviation,
-        double mean)
+        double mean,
+        CancellationToken ct = default)
     {
         if (standardDeviation <= 0)
         {
@@ -370,7 +382,7 @@ public class InstrumentModelManager : IInstrumentModelManager
 
         var instrument = await context.Instruments
             .Include(i => i.RandomMultiplicativeConfig)
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
 
         if (instrument == null)
         {
@@ -395,7 +407,7 @@ public class InstrumentModelManager : IInstrumentModelManager
             instrument.RandomMultiplicativeConfig.Mean = mean;
         }
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
 
         _logger.LogInformation(
             "RandomMultiplicative config updated for '{InstrumentName}': StdDev={StdDev}, Mean={Mean}",
@@ -415,18 +427,17 @@ public class InstrumentModelManager : IInstrumentModelManager
         double mean,
         double kappa,
         double sigma,
-        double dt)
+        double dt,
+        CancellationToken ct = default)
     {
         if (kappa <= 0)
         {
             throw new ArgumentException("Kappa (mean reversion strength) must be positive", nameof(kappa));
         }
-
         if (sigma < 0)
         {
             throw new ArgumentException("Sigma (volatility) cannot be negative", nameof(sigma));
         }
-
         if (dt <= 0)
         {
             throw new ArgumentException("Dt (time step) must be positive", nameof(dt));
@@ -437,7 +448,7 @@ public class InstrumentModelManager : IInstrumentModelManager
 
         var instrument = await context.Instruments
             .Include(i => i.MeanRevertingConfig)
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
 
         if (instrument == null)
         {
@@ -464,7 +475,7 @@ public class InstrumentModelManager : IInstrumentModelManager
             instrument.MeanRevertingConfig.Dt = dt;
         }
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
 
         _logger.LogInformation(
             "MeanReverting config updated for '{InstrumentName}': Mean={Mean}, Kappa={Kappa}, Sigma={Sigma}, Dt={Dt}",
@@ -481,7 +492,8 @@ public class InstrumentModelManager : IInstrumentModelManager
     /// </summary>
     public async Task<RandomAdditiveWalkConfig> UpdateRandomAdditiveWalkConfigAsync(
         string instrumentName,
-        string walkStepsJson)
+        string walkStepsJson,
+        CancellationToken ct = default)
     {
         // Validate JSON can be deserialized
         List<RandomWalkStep> steps;
@@ -517,7 +529,7 @@ public class InstrumentModelManager : IInstrumentModelManager
 
         var instrument = await context.Instruments
             .Include(i => i.RandomAdditiveWalkConfig)
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
 
         if (instrument == null)
         {
@@ -538,7 +550,7 @@ public class InstrumentModelManager : IInstrumentModelManager
             instrument.RandomAdditiveWalkConfig.WalkStepsJson = walkStepsJson;
         }
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
 
         _logger.LogInformation(
             "RandomAdditiveWalk config updated for '{InstrumentName}'",
@@ -550,7 +562,9 @@ public class InstrumentModelManager : IInstrumentModelManager
         return instrument.RandomAdditiveWalkConfig;
     }
 
-    public async Task<int> UpdateTickIntervalAsync(string instrumentName, int tickIntervalMs)
+    public async Task<int> UpdateTickIntervalAsync(
+        string instrumentName, int tickIntervalMs,
+        CancellationToken ct = default)
     {
         if (tickIntervalMs <= 0)
         {
@@ -561,7 +575,7 @@ public class InstrumentModelManager : IInstrumentModelManager
         var context = scope.ServiceProvider.GetRequiredService<MarketDataContext>();
 
         var instrument = await context.Instruments
-            .FirstOrDefaultAsync(i => i.Name == instrumentName);
+            .FirstOrDefaultAsync(i => i.Name == instrumentName, ct);
 
         if (instrument == null)
         {
@@ -570,7 +584,7 @@ public class InstrumentModelManager : IInstrumentModelManager
 
         instrument.TickIntervalMillieconds = tickIntervalMs;
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(ct);
         OnTickIntervalChanged(instrumentName, tickIntervalMs);
 
         return instrument.TickIntervalMillieconds;
