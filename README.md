@@ -301,6 +301,7 @@ service MarketDataService {
 service ModelConfigurationService {
     rpc GetAllInstruments(GetAllInstrumentsRequest) returns (GetAllInstrumentsResponse);
     rpc TryAddInstrument(TryAddInstrumentRequest) returns (TryAddInstrumentResponse);
+    rpc TryRemoveInstrument(TryRemoveInstrumentRequest) returns (TryRemoveInstrumentResponse);
     rpc GetSupportedModels(GetSupportedModelsRequest) returns (SupportedModelsResponse);
     rpc GetConfigurations(GetConfigurationsRequest) returns (ConfigurationsResponse);
     rpc UpdateTickInterval(UpdateTickIntervalRequest) returns (UpdateConfigResponse);
