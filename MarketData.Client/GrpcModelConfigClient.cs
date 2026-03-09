@@ -44,6 +44,7 @@ internal class GrpcModelConfigClient : GrpcClientBase
             InstrumentName = name,
             TickIntervalMs = tickInterval,
             InitialPriceValue = initialPrice,
+            InitialPriceTimestamp = DateTime.UtcNow.Ticks
         });
 
         if (response.Added)
