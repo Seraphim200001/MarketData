@@ -274,7 +274,7 @@ public class ProtoContractValidationTests
     }
 
     [Fact]
-    public void GetInstrumentsRequestTest()
+    public void TryAddInstrumentRequestTest()
     {
         var request = new TryAddInstrumentRequest();
         request.InstrumentName = "TEST";
@@ -285,7 +285,7 @@ public class ProtoContractValidationTests
     }
 
     [Fact]
-    public void GetInstrumentsResponseTest() 
+    public void TryAddInstrumentResponseTest() 
     {
         var response = new TryAddInstrumentResponse();
         response.Message = "Instrument added successfully";
@@ -293,5 +293,69 @@ public class ProtoContractValidationTests
         Assert.NotNull(response);
         Assert.Equal("Instrument added successfully", response.Message);
         Assert.True(response.Added);
+    }
+
+    [Fact]
+    public void TryRemoveInstrumentRequestTest()
+    {
+        var request = new TryRemoveInstrumentRequest();
+        request.InstrumentName = "TEST";
+        Assert.NotNull(request);
+        Assert.Equal("TEST", request.InstrumentName);
+    }
+
+    [Fact]
+    public void TryRemoveInstrumentResponseTest()
+    {
+        var response = new TryRemoveInstrumentResponse();
+        response.Message = "Instrument removed successfully";
+        response.Removed = true;
+        Assert.NotNull(response);
+        Assert.Equal("Instrument removed successfully", response.Message);
+        Assert.True(response.Removed);
+    }
+
+    [Fact]
+    public void GetAllInstrumentsRequestTest()
+    {
+        var request = new GetAllInstrumentsRequest();
+        Assert.NotNull(request);
+    }
+
+    [Fact]
+    public void GetAllInstrumentsResponseTest()
+    {
+        var response = new GetAllInstrumentsResponse();
+        response.Configurations.Add(new ConfigurationsResponse
+        {
+            InstrumentName = "TEST",
+            ActiveModel = "RandomMultiplicative",
+            TickIntervalMs = 1000,
+            FlatConfigured = false
+        });
+        response.Configurations.Add(new ConfigurationsResponse
+        {
+            InstrumentName = "AAPL",
+            ActiveModel = "MeanReverting",
+            TickIntervalMs = 500,
+            FlatConfigured = true,
+            MeanReverting = new MeanRevertingConfigData
+            {
+                Mean = 150.0,
+                Kappa = 0.5,
+                Sigma = 2.0,
+                Dt = 1.0
+            }
+        });
+
+        Assert.Equal(2, response.Configurations.Count);
+        Assert.Equal("TEST", response.Configurations[0].InstrumentName);
+        Assert.Equal("AAPL", response.Configurations[1].InstrumentName);
+        Assert.Equal("RandomMultiplicative", response.Configurations[0].ActiveModel);
+        Assert.Equal("MeanReverting", response.Configurations[1].ActiveModel);  
+        Assert.Equal(150.0, response.Configurations[1].MeanReverting.Mean);
+        Assert.Equal(0.5, response.Configurations[1].MeanReverting.Kappa);
+        Assert.Equal(2.0, response.Configurations[1].MeanReverting.Sigma);
+        Assert.Equal(1.0, response.Configurations[1].MeanReverting.Dt); 
     }
 }
