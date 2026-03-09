@@ -276,7 +276,7 @@ public class MarketDataGeneratorService : BackgroundService
         if (!TakeActionNeeded(_lastGrpcPublish, price.Instrument!, price.Timestamp, _options.GrpcPublishMilliseconds))
             return;
            
-        _logger.LogInformation("[{Timestamp}] Publishing price for {Instrument}: {Price}", 
+        _logger.LogDebug("[{Timestamp}] Publishing price for {Instrument}: {Price}", 
             price.Timestamp, price.Instrument, price.Value);
 
         await MarketDataGrpcService.BroadcastPrice(price.Instrument!, price.Value, price.Timestamp);
@@ -292,7 +292,7 @@ public class MarketDataGeneratorService : BackgroundService
         if (!TakeActionNeeded(_lastDatabaseUpdates, price.Instrument!, price.Timestamp, _options.DatabasePersistenceMilliseconds))
             return;
 
-        _logger.LogInformation("[{Timestamp}] Persisting price for {Instrument}: {Price}", 
+        _logger.LogDebug("[{Timestamp}] Persisting price for {Instrument}: {Price}", 
             price.Timestamp, price.Instrument, price.Value);
 
         using var scope = _serviceProvider.CreateScope();
