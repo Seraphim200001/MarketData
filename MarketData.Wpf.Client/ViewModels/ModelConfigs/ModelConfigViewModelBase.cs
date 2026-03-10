@@ -1,6 +1,5 @@
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Shared;
-using System.Windows;
 
 namespace MarketData.Wpf.Client.ViewModels.ModelConfigs;
 
@@ -16,6 +15,7 @@ public abstract class ModelConfigViewModelBase : ViewModelBase
     protected ModelConfigViewModelBase(string instrumentName, IDialogService dialogService)
     {
         _instrumentName = instrumentName;
+        _dialogService = dialogService;
     }
 
     internal async Task ExecutePublishConfigChangesSafe(CancellationToken ct = default)
