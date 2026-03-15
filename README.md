@@ -29,31 +29,7 @@ This is still work in progress, but see below where I have got to so far! Key fe
 
 ## System Architecture
 
-```
-┌─────────────────────────────────────────┐
-│            Client Applications          │
-├─────────────────────┬───────────────────┤
-│  MarketData.Wpf     │  MarketData       │
-│     .Client         │    .Client        │
-│  (WPF GUI Client)   │ (Console Client)  │
-└──────────┬──────────┴──────────┬────────┘
-           │                     │
-           │   gRPC Streaming    │
-           └──────────┬──────────┘
-                      │
-           ┌──────────▼──────────┐
-           │    MarketData       │
-           │   (ASP.NET Core)    │
-           │    gRPC Server      │
-           └──────────┬──────────┘
-                      │
-        ┌─────────────┼─────────────┐
-        │             │             │
-   ┌────▼────┐   ┌────▼────┐  ┌─────▼───────┐
-   │ SQLite  │   │  Model  │  │   Price     │
-   │   DB    │   │ Manager │  │ Simulator   │
-   └─────────┘   └─────────┘  └─────────────┘
-```
+![Architecture diagram](images/Architecture.drawio.png)
 
 ---
 
