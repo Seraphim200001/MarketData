@@ -25,13 +25,14 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
 	<Protobuf Include="..\MarketData\Protos\marketdata.proto" GrpcServices="Client" Link="Protos\marketdata.proto" />
 	<Protobuf Include="..\MarketData\Protos\modelconfiguration.proto" GrpcServices="Client" Link="Protos\modelconfiguration.proto" />
   </ItemGroup>
-	
+
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

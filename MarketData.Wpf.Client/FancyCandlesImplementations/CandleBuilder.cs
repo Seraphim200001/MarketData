@@ -21,7 +21,7 @@ internal class CandleBuilder<T>(TimeSpan timeSpan, ILogger logger, bool connectC
 
     public (T o, T h, T l, T c, int count)? AddPoint(DateTime t, T v)
     {
-        logger.LogDebug("Adding point to candle: Time={Time:yyyy-MM-dd HH:mm:ss.fff zzz}, Value={Value}", t, v);
+        logger.LogTrace("Adding point to candle: Time={Time:yyyy-MM-dd HH:mm:ss.fff zzz}, Value={Value}", t, v);
         if (!_isOpen)
         {
             _isOpen = true;
@@ -55,10 +55,6 @@ internal class CandleBuilder<T>(TimeSpan timeSpan, ILogger logger, bool connectC
                 _close = v;
                 _lastClose = v;
                 _isOpen = false;
-
-                logger.LogDebug("Candle completed: Start={Start:yyyy-MM-dd HH:mm:ss.fff zzz}, " +
-                    "Open={Open}, High={High}, Low={Low}, Close={Close}, Volume={Volume}",
-                    _start, _open, _high, _low, _close, _volume);
 
                 return (_open, _high, _low, _close, _volume);
             }

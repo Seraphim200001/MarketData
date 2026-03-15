@@ -232,12 +232,17 @@ public class InstrumentViewModel : ViewModelBase
         _logger.LogInformation("Received historical data for instrument {Instrument} with {Count} price points",
             _instrument, historicalData.Prices.Count);
 
+        int candlesCreated = 0;
         PriceUpdate? lastPrice = null;
         foreach (var dataPoint in historicalData.Prices.OrderBy(x => x.Timestamp))
         {
-            await UpdateCandleChartAsync(dataPoint);
+            if (await UpdateCandleChartAsync(dataPoint, logIndividualCandle: false))
+                candlesCreated++;
             lastPrice = dataPoint;
         }
+
+        _logger.LogInformation("Pre-loaded {CandleCount} candles for instrument {Instrument}",
+            candlesCreated, _instrument);
 
         if (lastPrice != null)
         {
@@ -250,11 +255,8 @@ public class InstrumentViewModel : ViewModelBase
         }
     }
 
-    private async Task UpdateCandleChartAsync(PriceUpdate priceUpdate)
+    private async Task<bool> UpdateCandleChartAsync(PriceUpdate priceUpdate, bool logIndividualCandle = true)
     {
-        _logger.LogTrace("Updating candle chart for instrument {Instrument} with price {Price} at {Timestamp}",
-            _instrument, priceUpdate.Value, new DateTime(priceUpdate.Timestamp));
-
         var candle = _candleBuilder.AddPoint(
                             new DateTime(priceUpdate.Timestamp), priceUpdate.Value);
 
@@ -266,9 +268,16 @@ public class InstrumentViewModel : ViewModelBase
                     candle.Value, _candlePrecision));
             });
 
-            _logger.LogDebug("Candle completed for instrument {Instrument}: O={Open}, H={High}, L={Low}, C={Close}",
-                _instrument, candle.Value.o, candle.Value.h, candle.Value.l, candle.Value.c);
+            if (logIndividualCandle)
+            {
+                _logger.LogDebug("Candle completed for instrument {Instrument}: O={Open}, H={High}, L={Low}, C={Close}",
+                    _instrument, candle.Value.o, candle.Value.h, candle.Value.l, candle.Value.c);
+            }
+
+            return true;
         }
+
+        return false;
     }
 
     public async Task StopStreamingAsync()

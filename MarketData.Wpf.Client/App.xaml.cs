@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using Grpc.Net.ClientFactory;
+﻿using Grpc.Net.ClientFactory;
 using MarketData.Client.Shared.Configuration;
 using MarketData.Grpc;
 using MarketData.Wpf.Client.Services;
@@ -9,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
+using Serilog.Events;
+using System.Windows;
 
 namespace MarketData.Wpf.Client;
 
