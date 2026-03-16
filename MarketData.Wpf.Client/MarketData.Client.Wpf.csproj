@@ -6,7 +6,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>MarketData-client-icon.ico</ApplicationIcon>
+    <Title>WPF Market Data Client</Title>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="MarketData-client-icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FancyCandles" Version="2.7.1" />

@@ -7,6 +7,7 @@ using MarketData.Wpf.Client.Views;
 using MarketData.Wpf.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog.Context;
 using System.Windows;
 using System.Windows.Input;
 
@@ -234,11 +235,14 @@ public class InstrumentViewModel : ViewModelBase
 
         int candlesCreated = 0;
         PriceUpdate? lastPrice = null;
-        foreach (var dataPoint in historicalData.Prices.OrderBy(x => x.Timestamp))
+        using(LogContext.PushProperty("InitializingCandleChart", true))
         {
-            if (await UpdateCandleChartAsync(dataPoint, logIndividualCandle: false))
-                candlesCreated++;
-            lastPrice = dataPoint;
+            foreach (var dataPoint in historicalData.Prices.OrderBy(x => x.Timestamp))
+            {
+                if (await UpdateCandleChartAsync(dataPoint))
+                    candlesCreated++;
+                lastPrice = dataPoint;
+            }
         }
 
         _logger.LogInformation("Pre-loaded {CandleCount} candles for instrument {Instrument}",

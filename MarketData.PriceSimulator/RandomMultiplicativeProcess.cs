@@ -73,7 +73,8 @@ public class RandomMultiplicativeProcess : IPriceSimulator
     ///     ~95% of moves will be within ±4% of the current price</param>
     /// <param name="mean">The mean or drift of the percentage moves.</param>
     /// <param name="logger">Optional logger for diagnostics</param>
-    public RandomMultiplicativeProcess(double standardDeviation, double mean, ILogger<RandomMultiplicativeProcess>? logger)
+    public RandomMultiplicativeProcess(double standardDeviation, double mean = 0d, 
+        ILogger<RandomMultiplicativeProcess>? logger = default)
     {
         if(standardDeviation <= 0)
         {

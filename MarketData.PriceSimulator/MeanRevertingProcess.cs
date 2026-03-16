@@ -77,7 +77,7 @@ public class MeanRevertingProcess : IPriceSimulator
         var drift = _kappa * (_mean - price) * _dt;
         var diffusion = _sigma * Math.Sqrt(_dt) * z;
 
-        _logger.LogTrace("Calculated drift={Drift} and diffusion={Diffusion} for price {Price}", drift, diffusion, price);
+        _logger?.LogTrace("Calculated drift={Drift} and diffusion={Diffusion} for price {Price}", drift, diffusion, price);
         
         return price + drift + diffusion;
     }

@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
-using Serilog.Events;
 using System.Windows;
 
 namespace MarketData.Wpf.Client;
@@ -30,6 +29,7 @@ public partial class App : Application
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(_configuration)
+            .Filter.ByExcluding(logEvent => logEvent.Properties.ContainsKey("InitializingCandleChart"))
             .CreateLogger();
 
         try
