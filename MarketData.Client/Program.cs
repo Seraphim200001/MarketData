@@ -27,59 +27,65 @@ internal class Program
             var modelConfigClient = new GrpcModelConfigClient(grpcSettings);
             var priceStreamer = new PriceStreamer(grpcSettings);
 
-                    while (true)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine($"Press (Ctrl+C) to exit.");
-                        Console.WriteLine();
+            // Initialize gRPC connections to avoid race conditions
+            Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
+            await modelConfigClient.InitializeAsync();
+            await priceStreamer.InitializeAsync();
+            Log.Information("gRPC connections ready");
 
-                        var availableInstruments = await modelConfigClient.GetConfiguredInstruments();
-                        Console.WriteLine($"Available instruments: {string.Join(", ", availableInstruments)}");
+            while (true)
+            {
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine($"Press (Ctrl+C) to exit.");
+                Console.WriteLine();
 
-                        var sep = new string('=', 30);
-                        Console.WriteLine($"Menu {sep}");
-                        Console.WriteLine($"1. Add instrument");
-                        Console.WriteLine($"2. Remove instrument");
-                        Console.WriteLine($"3. View configurations");
-                        Console.WriteLine($"4. Start price streaming");
+                var availableInstruments = await modelConfigClient.GetConfiguredInstruments();
+                Console.WriteLine($"Available instruments: {string.Join(", ", availableInstruments)}");
 
-                        Console.Write($">>> ");
-                        var input = Console.ReadLine();
-                        if(input == "1")
-                        {
-                            await modelConfigClient.AddInstrument();
-                        }
-                        else if (input == "2")
-                        {
-                            await modelConfigClient.RemoveInstrument();
-                        }
-                        else if (input == "3")
-                        {
-                            await modelConfigClient.GetConfiguredInstruments(printConfigs: true);
-                        }
-                        else if (input == "4")
-                        {
-                            await priceStreamer.Start();
-                        }
-                    }
-                }
-                catch (Exception ex)
+                var sep = new string('=', 30);
+                Console.WriteLine($"Menu {sep}");
+                Console.WriteLine($"1. Add instrument");
+                Console.WriteLine($"2. Remove instrument");
+                Console.WriteLine($"3. View configurations");
+                Console.WriteLine($"4. Start price streaming");
+
+                Console.Write($">>> ");
+                var input = Console.ReadLine();
+                if (input == "1")
                 {
-                    Log.Fatal(ex, "Application terminated unexpectedly");
-                    throw;
+                    await modelConfigClient.AddInstrument();
                 }
-                finally
+                else if (input == "2")
                 {
-                    Log.Information("Shutting down Console Market Data Client");
-                    Log.CloseAndFlush();
+                    await modelConfigClient.RemoveInstrument();
+                }
+                else if (input == "3")
+                {
+                    await modelConfigClient.GetConfiguredInstruments(printConfigs: true);
+                }
+                else if (input == "4")
+                {
+                    await priceStreamer.Start();
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+            throw;
+        }
+        finally
+        {
+            Log.Information("Shutting down Console Market Data Client");
+            Log.CloseAndFlush();
+        }
+    }
 
-            private static void LogBanner()
-            {
-                const string banner =
-        @"
+    private static void LogBanner()
+    {
+        const string banner =
+@"
           __  __            _        _       _       _        
          |  \/  |          | |      | |     | |     | |       
          | \  / | __ _ _ __| | _____| |_  __| | __ _| |_ __ _ 
@@ -92,6 +98,6 @@ internal class Program
          | |__| (_) | | | \__ \ (_) | |  __/  
           \____\___/|_| |_|___/\___/|_|\___|  
                                               ";
-                Log.Logger.Information(banner);
-            }
-        }
+        Log.Logger.Information(banner);
+    }
+}
