@@ -20,10 +20,10 @@ internal abstract class GrpcClientBase : IAsyncDisposable
         });
     }
 
-    protected async Task WaitForConnectionAsync(CancellationToken cancellationToken = default)
+    protected async Task WaitForConnectionAsync(CancellationToken ct = default)
     {
         var initializer = new GrpcConnectionInitializer(_channel);
-        await initializer.InitializeAsync(cancellationToken);
+        await initializer.InitializeAsync(ct: ct);
     }
 
     public virtual ValueTask DisposeAsync()
