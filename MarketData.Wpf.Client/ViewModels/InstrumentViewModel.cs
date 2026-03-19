@@ -23,7 +23,7 @@ public class InstrumentViewModel : ViewModelBase
     private readonly IModelConfigService _modelConfigService;
     private readonly IDialogService _dialogService;
 
-    private CandleBuilder<double> _candleBuilder;
+    private readonly CandleBuilder<double> _candleBuilder;
     private CandlesSource _candles;
     private int _loadHistoryOnStartMinutes = 1440;
     private int _candlePrecision = 2;
