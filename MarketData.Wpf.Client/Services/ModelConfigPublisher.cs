@@ -163,6 +163,6 @@ public class ModelConfigPublisher : IDisposable, IModelConfigPublisher
     public void Dispose()
     {
         _logScope?.Dispose();
-        _modelConfigService?.Dispose();
+        // Do not dispose _modelConfigService here; its lifetime is managed by the DI container (singleton).
     }
 }
