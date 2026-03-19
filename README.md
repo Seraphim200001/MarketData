@@ -20,6 +20,7 @@ This is still work in progress, but see below where I have got to so far! Key fe
 | RPC Framework | gRPC |
 | Database | SQLite with Entity Framework Core |
 | ORM | Entity Framework Core 10.0 |
+| Logging | Serilog with Seq |
 | Charting | [FancyCandles 2.7.1](https://github.com/gellerda/FancyCandles) |
 | API Documentation | OpenAPI with Scalar |
 | Background Processing | IHostedService |
