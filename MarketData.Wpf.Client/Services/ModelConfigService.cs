@@ -14,7 +14,7 @@ public class ModelConfigService : IModelConfigService, IDisposable
 
     private bool _disposed;
 
-    public ModelConfigService(IOptions<GrpcSettings> grpcSettings, ILoggerFactory loggerFactory, ILogger<ModelConfigService> logger)
+    public ModelConfigService(IOptions<GrpcSettings> grpcSettings, ILogger<ModelConfigService> logger)
     {
         _logger = logger;
         _channel = GrpcChannel.ForAddress(grpcSettings.Value.ServerUrl);
