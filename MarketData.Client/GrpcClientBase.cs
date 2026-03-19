@@ -23,6 +23,7 @@ internal abstract class GrpcClientBase : IAsyncDisposable
     {
         var maxRetries = 5;
         var retryDelay = TimeSpan.FromMilliseconds(100);
+        Exception? lastException = null;
 
         for (int i = 0; i < maxRetries; i++)
         {
@@ -31,12 +32,18 @@ internal abstract class GrpcClientBase : IAsyncDisposable
                 await _channel.ConnectAsync(cancellationToken);
                 return;
             }
-            catch (Exception) when (i < maxRetries - 1)
+            catch (Exception ex)
             {
-                await Task.Delay(retryDelay, cancellationToken);
-                retryDelay = TimeSpan.FromMilliseconds(retryDelay.TotalMilliseconds * 1.5);
+                lastException = ex;
+                if (i < maxRetries - 1)
+                {
+                    await Task.Delay(retryDelay, cancellationToken);
+                    retryDelay = TimeSpan.FromMilliseconds(retryDelay.TotalMilliseconds * 1.5);
+                }
             }
         }
+
+        throw lastException ?? new TimeoutException($"Failed to establish connection to gRPC channel after {maxRetries} retries.");
     }
 
     public virtual ValueTask DisposeAsync()
