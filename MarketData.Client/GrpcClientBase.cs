@@ -1,5 +1,6 @@
 ﻿using Grpc.Net.Client;
 using MarketData.Client.Shared.Configuration;
+using MarketData.Client.Shared.Services;
 
 namespace MarketData.Client;
 
@@ -21,29 +22,8 @@ internal abstract class GrpcClientBase : IAsyncDisposable
 
     protected async Task WaitForConnectionAsync(CancellationToken cancellationToken = default)
     {
-        var maxRetries = 5;
-        var retryDelay = TimeSpan.FromMilliseconds(100);
-        Exception? lastException = null;
-
-        for (int i = 0; i < maxRetries; i++)
-        {
-            try
-            {
-                await _channel.ConnectAsync(cancellationToken);
-                return;
-            }
-            catch (Exception ex)
-            {
-                lastException = ex;
-                if (i < maxRetries - 1)
-                {
-                    await Task.Delay(retryDelay, cancellationToken);
-                    retryDelay = TimeSpan.FromMilliseconds(retryDelay.TotalMilliseconds * 1.5);
-                }
-            }
-        }
-
-        throw lastException ?? new TimeoutException($"Failed to establish connection to gRPC channel after {maxRetries} retries.");
+        var initializer = new GrpcConnectionInitializer(_channel);
+        await initializer.InitializeAsync(cancellationToken);
     }
 
     public virtual ValueTask DisposeAsync()
