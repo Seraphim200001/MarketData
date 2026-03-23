@@ -336,29 +336,42 @@ service ModelConfigurationService {
 ### Running the Solution
 
 1. **Start the Server:**
-   ```bash
-   cd MarketData
-   dotnet run
-   ```
-   Server runs on `https://localhost:7264` (default)
 
-2. **Start WPF Client:**
+    (from the root of the git repo)
+  
    ```bash
-   cd MarketData.Wpf.Client
-   dotnet run
+   dotnet run --project MarketData
+   ```
+     Server runs on `https://localhost:7264` (default)
+
+3. **Start WPF Client:**
+   ```bash
+   dotnet run --project MarketData.Wpf.Client
    ```
 
-3. **Start Console Client:**
+4. **Start Console Client:**
    ```bash
    cd MarketData.Client
    dotnet run
    ```
 
-4. **Quick Simulator Testing:**
-   ```bash
-   cd FastSimulate
-   dotnet run
-   ```
+### Notes & troubleshooting
+
+- Logs are automatically logged to file, and additionally Seq (if it is running - see below secition on logging to see how to set up a Seq service in Docker)
+- If running in WSL you may need to install the SDK, below is an example for Ubuntu
+  ```bash
+  # Add Microsoft package repository
+  wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+  sudo dpkg -i packages-microsoft-prod.deb
+  rm packages-microsoft-prod.deb
+
+  # Update and install
+  sudo apt update
+  sudo apt install -y dotnet-sdk-10.0
+
+  # Verify
+  dotnet --version
+  ```
 
 ### Database Migrations
 ```bash
