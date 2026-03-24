@@ -344,6 +344,12 @@ service ModelConfigurationService {
    ```
      Server runs on `https://localhost:7264` (default)
 
+     Optionally add `--seed-data` to seed database with a sample instrument and model config (e.g. for first-time setup)
+
+     ```bash
+     dotnet run --project MarketData --seed-data
+     ```
+
 3. **Start WPF Client:**
    ```bash
    dotnet run --project MarketData.Wpf.Client

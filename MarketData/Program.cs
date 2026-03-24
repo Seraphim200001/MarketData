@@ -3,6 +3,7 @@ using MarketData.Data;
 using MarketData.Services;
 using Scalar.AspNetCore;
 using Serilog;
+using MarketData.Models;
 
 // Configure Serilog early to capture startup logs
 Log.Logger = new LoggerConfiguration()
@@ -59,6 +60,9 @@ try
         {
             var context = scope.ServiceProvider.GetRequiredService<MarketDataContext>();
             context.Database.Migrate();
+
+            if (args.Contains("--seed-data"))
+                DatabaseSeeder.Seed(context);
         }
 
         app.MapOpenApi();
