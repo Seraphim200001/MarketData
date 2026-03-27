@@ -1,5 +1,6 @@
 using FancyCandles;
 using Grpc.Core;
+using MarketData.Client.Grpc.Services;
 using MarketData.Client.Wpf.Services;
 using MarketData.Grpc;
 using MarketData.Wpf.Client.FancyCandlesImplementations;
