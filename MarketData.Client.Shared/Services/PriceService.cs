@@ -22,6 +22,13 @@ public class PriceService : IPriceService, IDisposable
         _client = new MarketDataService.MarketDataServiceClient(_channel);
     }
 
+    public PriceService(GrpcChannel channel, ILogger<PriceService> logger)
+    {
+        _logger = logger;
+        _channel = channel;
+        _client = new MarketDataService.MarketDataServiceClient(_channel);
+    }
+
     public async Task<HistoricalDataResponse> GetHistoricalDataAsync(
         string instrument, long startTimestamp, long endTimestamp, CancellationToken ct = default)
     {
