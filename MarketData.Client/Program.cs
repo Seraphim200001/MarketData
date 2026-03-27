@@ -1,7 +1,10 @@
-using MarketData.Client;
+using MarketData.Client.Grpc.Services;
 using MarketData.Client.Grpc.Configuration;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using MarketData.Client;
 
 internal class Program
 {
@@ -25,12 +28,13 @@ internal class Program
                 .Get<GrpcSettings>() ?? new GrpcSettings();
 
             var modelConfigClient = new GrpcModelConfigClient(grpcSettings);
-            var priceStreamer = new PriceStreamer(grpcSettings);
+            var priceService = new PriceService(Options.Create(grpcSettings), new LoggerFactory().CreateLogger<PriceService>());
+            var priceStreamer = new PriceStreamer(priceService);
 
             // Initialize gRPC connections to avoid race conditions
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
             await modelConfigClient.InitializeAsync();
-            await priceStreamer.InitializeAsync();
+            //await priceStreamer.InitializeAsync();
             Log.Information("gRPC connections ready");
 
             while (true)

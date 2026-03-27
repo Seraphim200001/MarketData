@@ -1,10 +1,9 @@
 ﻿using Grpc.Net.Client;
 using MarketData.Client.Grpc.Configuration;
-using MarketData.Client.Grpc.Services;
 
-namespace MarketData.Client;
+namespace MarketData.Client.Grpc.Services;
 
-internal abstract class GrpcClientBase : IAsyncDisposable
+public abstract class GrpcClientBase : IAsyncDisposable
 {
     protected readonly GrpcChannel _channel;
     protected readonly GrpcSettings _grpcSettings;

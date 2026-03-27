@@ -2,9 +2,9 @@
 using MarketData.Grpc;
 using System.Text.Json;
 
-namespace MarketData.Client;
+namespace MarketData.Client.Grpc.Services;
 
-internal class GrpcModelConfigClient : GrpcClientBase
+public class GrpcModelConfigClient : GrpcClientBase
 {
     private readonly ModelConfigurationService.ModelConfigurationServiceClient _client;
 

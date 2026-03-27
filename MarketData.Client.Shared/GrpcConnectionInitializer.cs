@@ -2,7 +2,7 @@ using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace MarketData.Client.Grpc.Services;
+namespace MarketData.Client.Grpc;
 
 public interface IGrpcConnectionInitializer
 {

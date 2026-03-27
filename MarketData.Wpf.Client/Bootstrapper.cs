@@ -1,6 +1,6 @@
 ﻿using Grpc.Net.Client;
+using MarketData.Client.Grpc;
 using MarketData.Client.Grpc.Configuration;
-using MarketData.Client.Grpc.Services;
 using MarketData.Client.Wpf.Services;
 using MarketData.Grpc;
 using MarketData.Wpf.Client.Services;
@@ -34,6 +34,7 @@ internal static class Bootstrapper
 
         Logger.Information("Registering application specific services");
         services.AddSingleton<IModelConfigService, ModelConfigService>();
+        services.AddSingleton<IPriceService, PriceService>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddTransient<InstrumentViewModelFactory>();
 
@@ -53,9 +54,6 @@ internal static class Bootstrapper
             new GrpcConnectionInitializer(
                 sp.GetRequiredService<GrpcChannel>(),
                 sp.GetRequiredService<ILogger<GrpcConnectionInitializer>>()));
-
-        services.AddSingleton<MarketDataService.MarketDataServiceClient>(sp =>
-            new MarketDataService.MarketDataServiceClient(sp.GetRequiredService<GrpcChannel>()));
 
         services.AddSingleton<ModelConfigurationService.ModelConfigurationServiceClient>(sp =>
             new ModelConfigurationService.ModelConfigurationServiceClient(sp.GetRequiredService<GrpcChannel>()));

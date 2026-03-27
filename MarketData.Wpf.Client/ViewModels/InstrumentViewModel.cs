@@ -19,7 +19,7 @@ public class InstrumentViewModel : ViewModelBase
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
     private CancellationTokenSource? _cancellationTokenSource;
-    private readonly MarketDataService.MarketDataServiceClient _grpcClient;
+    private readonly IPriceService _priceService;
     private readonly IModelConfigService _modelConfigService;
     private readonly IDialogService _dialogService;
 
@@ -34,13 +34,13 @@ public class InstrumentViewModel : ViewModelBase
     private bool _isStreaming;
 
     public InstrumentViewModel(string instrumentName,
-        MarketDataService.MarketDataServiceClient grpcClient, 
+        IPriceService priceService,
         IModelConfigService modelConfigService,
         IDialogService dialogService,
         IOptions<CandleChartSettings> candleChartConfig,
         ILoggerFactory loggerFactory)
     {
-        _grpcClient = grpcClient;
+        _priceService = priceService;
         _modelConfigService = modelConfigService;
         _dialogService = dialogService;
         _logger = loggerFactory.CreateLogger<InstrumentViewModel>();
@@ -172,11 +172,8 @@ public class InstrumentViewModel : ViewModelBase
 
         try
         {
-            var request = new SubscribeRequest();
-            request.Instruments.Add(Instrument);
-
             _logger.LogInformation("Starting price stream for instrument {Instrument}", _instrument);
-            using var call = _grpcClient.SubscribeToPrices(request, cancellationToken: _cancellationTokenSource.Token);
+            using var call = _priceService.SubscribeToPrices(Instrument, _cancellationTokenSource.Token);
 
             await foreach (var priceUpdate in call.ResponseStream.ReadAllAsync(_cancellationTokenSource.Token))
             {
@@ -244,12 +241,7 @@ public class InstrumentViewModel : ViewModelBase
         _logger.LogInformation("Loading historical data for instrument {Instrument} from {Start} to {End}", 
             _instrument, start, now);
 
-        var historicalData = _grpcClient.GetHistoricalData(new HistoricalDataRequest
-        {
-            Instrument = Instrument,
-            StartTimestamp = start.Ticks,
-            EndTimestamp = now.Ticks
-        }, cancellationToken: ct);
+        var historicalData = await _priceService.GetHistoricalDataAsync(Instrument, start.Ticks, now.Ticks, ct);
 
         _logger.LogInformation("Received historical data for instrument {Instrument} with {Count} price points",
             _instrument, historicalData.Prices.Count);
