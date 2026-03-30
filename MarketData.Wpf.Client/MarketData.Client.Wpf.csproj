@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MarketData.Client.Shared\MarketData.Client.Grpc.csproj" />
+    <ProjectReference Include="..\MarketData.Client.Grpc\MarketData.Client.Grpc.csproj" />
     <ProjectReference Include="..\MarketData.Wpf.Shared\MarketData.Wpf.Shared.csproj" />
   </ItemGroup>
 </Project>
