@@ -36,40 +36,24 @@ public sealed class GrpcServicesBuilder
 public static class GrpcServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <typeparamref name="TImpl"/> as the <typeparamref name="TConnection"/> singleton,
-    /// creating the gRPC channel from <see cref="IOptions{GrpcSettings}"/> already bound in DI.
+    /// Registers <typeparamref name="TImpl"/> as the <typeparamref name="TConnection"/> singleton.
+    /// Pass <paramref name="settings"/> directly for console / test scenarios; omit it to resolve
+    /// <see cref="IOptions{GrpcSettings}"/> from DI (e.g. WPF / ASP.NET apps).
     /// </summary>
     public static GrpcServicesBuilder AddGrpcConnections<TConnection, TImpl>(
         this IServiceCollection services,
+        GrpcSettings? settings = null,
         GrpcChannelOptions? channelOptions = null)
-        where TConnection : class
-        where TImpl : class, TConnection
+                                                            where TConnection : class
+                                                            where TImpl : class, TConnection
     {
-        services.AddSingleton<TConnection>(sp => channelOptions is null
-            ? ActivatorUtilities.CreateInstance<TImpl>(sp,
-                sp.GetRequiredService<IOptions<GrpcSettings>>())
-            : ActivatorUtilities.CreateInstance<TImpl>(sp,
-                sp.GetRequiredService<IOptions<GrpcSettings>>(),
-                channelOptions));
-
-        return new GrpcServicesBuilder(services, typeof(TConnection));
-    }
-
-    /// <summary>
-    /// Registers <typeparamref name="TImpl"/> as the <typeparamref name="TConnection"/> singleton,
-    /// using a plain <see cref="GrpcSettings"/> instance (e.g. for console / test scenarios
-    /// where <see cref="IOptions{T}"/> is not bound).
-    /// </summary>
-    public static GrpcServicesBuilder AddGrpcConnections<TConnection, TImpl>(
-        this IServiceCollection services,
-        GrpcSettings settings,
-        GrpcChannelOptions? channelOptions = null)
-        where TConnection : class
-        where TImpl : class, TConnection
-    {
-        services.AddSingleton<TConnection>(sp => channelOptions is null
-            ? ActivatorUtilities.CreateInstance<TImpl>(sp, settings)
-            : ActivatorUtilities.CreateInstance<TImpl>(sp, settings, channelOptions));
+        services.AddSingleton<TConnection>(sp =>
+        {
+            var resolvedSettings = settings ?? sp.GetRequiredService<IOptions<GrpcSettings>>().Value;
+            return channelOptions is null
+                ? ActivatorUtilities.CreateInstance<TImpl>(sp, resolvedSettings)
+                : ActivatorUtilities.CreateInstance<TImpl>(sp, resolvedSettings, channelOptions);
+        });
 
         return new GrpcServicesBuilder(services, typeof(TConnection));
     }
