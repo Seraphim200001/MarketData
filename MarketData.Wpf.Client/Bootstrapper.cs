@@ -1,4 +1,3 @@
-using Grpc.Net.Client;
 using MarketData.Client.Grpc;
 using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Grpc.Services;
@@ -46,33 +45,19 @@ internal static class Bootstrapper
     {
         Logger.Information("Configuring gRPC clients with server URL from configuration");
 
-        services.AddSingleton(sp => GrpcChannel.ForAddress(sp.GetGrpcServerUrl(), DefaultChannelOptions));
-
-        services.AddSingleton<IMarketDataGrpcConnectionilder>(sp =>
-            new MarketDataGrpcConnectionBuilder(
-                sp.GetRequiredService<IOptions<GrpcSettings>>(),
-                sp.GetRequiredService<ILogger<MarketDataGrpcConnectionBuilder>>()));
-
-        services.AddSingleton<IPriceService, PriceService>(sp => 
-            new PriceService(
-                sp.GetRequiredService<IMarketDataGrpcConnectionilder>(),
-                sp.GetRequiredService<ILogger<PriceService>>()));
-
-        services.AddSingleton<IInstrumentService, InstrumentService>(sp =>
-            new InstrumentService(
-                sp.GetRequiredService<IMarketDataGrpcConnectionilder>(),
-                sp.GetRequiredService<ILogger<InstrumentService>>()));
-
-        services.AddSingleton<IModelConfigService, ModelConfigService>(sp =>
-            new ModelConfigService(
-                sp.GetRequiredService<IMarketDataGrpcConnectionilder>(),
-                sp.GetRequiredService<ILogger<ModelConfigService>>()));
+        services
+            .AddGrpcConnections<IMarketDataGrpcConnectionilder, MarketDataGrpcConnectionBuilder>(
+                channelOptions: new()
+                {
+                    InitialReconnectBackoff = TimeSpan.FromMilliseconds(100),
+                    MaxReconnectBackoff = TimeSpan.FromSeconds(1)
+                })
+            .With<IPriceService, PriceService>()
+            .With<IInstrumentService, InstrumentService>()
+            .With<IModelConfigService, ModelConfigService>();
 
         return services;
     }
-
-    internal static string GetGrpcServerUrl(this IServiceProvider sp) => 
-        sp.GetRequiredService<IOptions<GrpcSettings>>().Value.ServerUrl;
 
     internal static void InitializeGrpcConnections(IServiceProvider serviceProvider)
     {
@@ -104,12 +89,6 @@ internal static class Bootstrapper
         }
     }
 
-
-    private static readonly GrpcChannelOptions DefaultChannelOptions = new()
-    {
-        InitialReconnectBackoff = TimeSpan.FromMilliseconds(100),
-        MaxReconnectBackoff = TimeSpan.FromSeconds(1)
-    };
 
     internal static void LogBanner()
     {

@@ -8,11 +8,6 @@ namespace MarketData.Client.Shared.Services;
 public interface IPriceService
 {
     /// <summary>
-    /// Asynchronously retrieves the most recent price update for the specified financial instrument.
-    /// </summary>
-    Task<PriceUpdate> GetLatestPriceAsync(string instrument, CancellationToken ct = default);
-
-    /// <summary>
     /// Retrieves historical price data for a given instrument within a timestamp range
     /// </summary>
     Task<IReadOnlyList<PriceUpdate>> GetHistoricalDataAsync(

@@ -1,11 +1,14 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Client.Grpc.Configuration;
-using Microsoft.Extensions.Configuration;
-using Serilog;
-using Microsoft.Extensions.Logging;
 using MarketData.Client;
 using MarketData.Client.Grpc;
+using MarketData.Client.Grpc.Configuration;
+using MarketData.Client.Grpc.Services;
+using MarketData.Client.Shared.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System.Text.Json;
+
+/* TO BE DEPRECATED */
 
 internal class Program
 {
@@ -24,22 +27,27 @@ internal class Program
         {
             LogBanner();
             Log.Information("Starting Console Market Data Client");
-            
+
             var grpcSettings = configuration.GetSection(GrpcSettings.SectionName)
                 .Get<GrpcSettings>() ?? new GrpcSettings();
 
-            using var loggerFactory = new LoggerFactory();
-            using var grpcConnection = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
-            using var modelConfigService = new ModelConfigService(grpcConnection, loggerFactory.CreateLogger<ModelConfigService>());
-            using var instrumentService = new InstrumentService(grpcConnection, loggerFactory.CreateLogger<InstrumentService>());
-            using var priceService = new PriceService(grpcConnection, loggerFactory.CreateLogger<PriceService>());
+            var services = new ServiceCollection();
+            services.AddLogging(b => b.AddSerilog());
+            services
+                .AddGrpcConnections<IMarketDataGrpcConnectionilder, MarketDataGrpcConnectionBuilder>(grpcSettings)
+                .With<IPriceService, PriceService>()
+                .With<IInstrumentService, InstrumentService>()
+                .With<IModelConfigService, ModelConfigService>();
+            services.AddSingleton<PriceStreamer>();
 
-            var priceStreamer = new PriceStreamer(priceService);
+            await using var sp = services.BuildServiceProvider();
 
-            // Initialize gRPC connections to avoid race conditions
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
-            await grpcConnection.InitializeAsync();
+            await sp.GetRequiredService<IMarketDataGrpcConnectionilder>().InitializeAsync();
             Log.Information("gRPC connections ready");
+
+            var instrumentService = sp.GetRequiredService<IInstrumentService>();
+            var priceStreamer = sp.GetRequiredService<PriceStreamer>();
 
             while (true)
             {

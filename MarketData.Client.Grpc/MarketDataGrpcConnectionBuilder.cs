@@ -1,29 +1,42 @@
 using Grpc.Net.Client;
 using MarketData.Client.Grpc.Configuration;
-using MarketData.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace MarketData.Client.Grpc;
 
-public class MarketDataGrpcConnectionBuilder : IMarketDataGrpcConnectionilder
+public class MarketDataGrpcConnectionBuilder : IMarketDataGrpcConnectionilder, IDisposable
 {
-    private readonly GrpcSettings _settings;
-    private readonly ILogger _logger;
+    private readonly ILogger<MarketDataGrpcConnectionBuilder> _logger;
     private readonly GrpcChannel _channel;
-    private readonly MarketDataService.MarketDataServiceClient _client;
 
-    public MarketDataGrpcConnectionBuilder(IOptions<GrpcSettings> grpcSettings, ILogger? logger = null)
+    public MarketDataGrpcConnectionBuilder(IOptions<GrpcSettings> grpcSettings,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
         : this(grpcSettings.Value, logger)
     {
     }
 
-    public MarketDataGrpcConnectionBuilder(GrpcSettings settings, ILogger? logger = null)
+    public MarketDataGrpcConnectionBuilder(IOptions<GrpcSettings> grpcSettings,
+        GrpcChannelOptions channelOptions,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+        : this(grpcSettings.Value, channelOptions, logger)
     {
-        _logger = logger ?? NullLogger.Instance;
+    }
+
+    public MarketDataGrpcConnectionBuilder(GrpcSettings settings,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+    {
+        _logger = logger ?? NullLogger<MarketDataGrpcConnectionBuilder>.Instance;
         _channel = GrpcChannel.ForAddress(settings.ServerUrl);
-        _client = new MarketDataService.MarketDataServiceClient(_channel);
+    }
+
+    public MarketDataGrpcConnectionBuilder(GrpcSettings settings,
+        GrpcChannelOptions channelOptions,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+    {
+        _logger = logger ?? NullLogger<MarketDataGrpcConnectionBuilder>.Instance;
+        _channel = GrpcChannel.ForAddress(settings.ServerUrl, channelOptions);
     }
 
     public GrpcChannel Channel { get => _channel; }
