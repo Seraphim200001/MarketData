@@ -86,13 +86,4 @@ public class PriceService : IPriceService, IDisposable
             _disposed = true;
         }
     }
-
-    //public async  Task<SharedModels.PriceUpdate?> GetLatestPriceAsync(string instrument, CancellationToken ct = default)
-    //{
-    //    var price = (await _client.GetHistoricalDataAsync(new HistoricalDataRequest { Instrument = instrument }))
-    //        .OrderByDescending(p => p.Timestamp)
-    //        .FirstOrDefault();
-
-    //    return price;
-    //}
 }
