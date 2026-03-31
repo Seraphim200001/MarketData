@@ -4,10 +4,11 @@ The MarketData solution is a distributed system for simulating, generating, and 
 
 My motivations were to show off my skills in API design and WPF in a fintech system. **It is purely a hobby project.**
 
-I first wanted to create a small application that could stream market data, and another application that could "book" (fake) trades based on that data. After soon realizing that market data would come at some expense I decided to start simulating that data. I implemented some basic models. I then wanted to see what effect different model parameters would have on the ticking prices, so one thing led to another and this is where I have got to.
+I first wanted to create a small application that could stream market data, and another application that could "book" (fake) trades based on that data. After soon realizing that market data would come at some expense I decided to start simulating that data. I implemented some basic models. Going forward, there is a lot that can be done to get this into a scalable tool with plugins. Key areas of growth on server-side includes adding new simulation models, splitting behemouth PriceGenerator service into distributed Generate Price -> Enrich (e.g. static data) -> post to API consumers & update database. Other future featues include moving to a more sophisticated RDBMS and eventually being able to trade on the data in a separate app.
 
-This is still work in progress, but see below where I have got to so far! Key features like the trading screen, security, containerisation and a more scalable RDBMS (currently I use SQLite) are yet to be implemented.
+This repository is open to contributors - please get in touch via the GitHub Issues tab or email marketdata.oss.szigh@gmail.com !
 
+Jonas
 
 ---
 
@@ -525,3 +526,4 @@ Resources:
 **Created:** 2026  
 **License:** MIT  
 **Type:** Hobby Project / Portfolio Demonstration
+**Contact:** marketdata.oss.szigh@gmail.com
