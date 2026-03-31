@@ -2,7 +2,6 @@
 using MarketData.Client.Grpc;
 using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Grpc.Services;
-using MarketData.Grpc;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;

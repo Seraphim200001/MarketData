@@ -15,10 +15,15 @@ public class PriceService : IPriceService, IDisposable
 
     private bool _disposed;
 
-    public PriceService(IOptions<GrpcSettings> grpcSettings, ILogger<PriceService> logger)
+    public PriceService(IOptions<GrpcSettings> grpcSettings, ILogger<PriceService> logger) 
+        : this(grpcSettings.Value, logger)
+    {
+    }
+
+    public PriceService(GrpcSettings grpcSettings, ILogger<PriceService> logger)
     {
         _logger = logger;
-        _channel = GrpcChannel.ForAddress(grpcSettings.Value.ServerUrl);
+        _channel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
         _client = new MarketDataService.MarketDataServiceClient(_channel);
     }
 

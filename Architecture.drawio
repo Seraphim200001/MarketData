@@ -1,11 +1,19 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0" version="29.6.1">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0" version="29.6.6">
   <diagram name="Page-1" id="QfiT1vqagOoWD0bPFFI2">
-    <mxGraphModel dx="667" dy="426" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1013" dy="557" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;" value="" vertex="1">
+          <mxGeometry height="50" width="335" x="127" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-14" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" target="gYUl0khqxb1LeJAdZpYp-9">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="295" y="570" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillStyle=solid;strokeColor=light-dark(#2D7600,#141E0D);fillColor=light-dark(#FFFFFF,#003300);fontColor=#ffffff;gradientColor=none;strokeWidth=0;" value="" vertex="1">
-          <mxGeometry height="310" width="470" x="60" y="230" as="geometry" />
+          <mxGeometry height="230" width="470" x="60" y="340" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Price Simulator&lt;div&gt;Service&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="320" y="250" as="geometry" />
@@ -13,62 +21,31 @@
         <mxCell id="5tUappil_dht_1FT31QH-4" edge="1" parent="1" source="5tUappil_dht_1FT31QH-3" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=default;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-9">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-32" edge="1" parent="1" source="5tUappil_dht_1FT31QH-9" style="edgeStyle=orthogonalEdgeStyle;shape=filledEdge;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="5tUappil_dht_1FT31QH-11" value="">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-34" edge="1" parent="1" source="5tUappil_dht_1FT31QH-9" style="edgeStyle=orthogonalEdgeStyle;shape=filledEdge;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="5tUappil_dht_1FT31QH-10" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="MarketData PriceGenerator" vertex="1">
+        <mxCell id="5tUappil_dht_1FT31QH-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="PriceGenerator&lt;div&gt;(Background service)&lt;/div&gt;" vertex="1">
           <mxGeometry height="60" width="120" x="320" y="350" as="geometry" />
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-10" parent="1" style="whiteSpace=wrap;html=1;rounded=0;fillColor=default;fontColor=default;strokeColor=#005700;" value="gRPC (prices)" vertex="1">
-          <mxGeometry height="60" width="120" x="250" y="450" as="geometry" />
+        <mxCell id="5tUappil_dht_1FT31QH-10" parent="1" style="whiteSpace=wrap;html=1;rounded=0;fillColor=default;fontColor=default;strokeColor=#005700;" value="gRPC&amp;nbsp;&lt;div&gt;(price streaming)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="380" y="490" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;fontColor=default;strokeColor=#005700;" value="REST server" vertex="1">
-          <mxGeometry height="60" width="120" x="390" y="450" as="geometry" />
-        </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-12" edge="1" parent="1" source="5tUappil_dht_1FT31QH-13" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fontSize=12;startSize=8;endSize=8;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" target="5tUappil_dht_1FT31QH-20">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry height="60" width="120" x="80" y="490" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" value="WPF Client" vertex="1">
-          <mxGeometry height="60" width="120" x="80" y="570" as="geometry" />
-        </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-15" edge="1" parent="1" source="5tUappil_dht_1FT31QH-11" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-27">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="480" y="580" as="sourcePoint" />
-            <mxPoint x="480" y="590" as="targetPoint" />
-          </mxGeometry>
+          <mxGeometry height="60" width="120" x="99" y="700" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" value="Console Client" vertex="1">
-          <mxGeometry height="60" width="120" x="250" y="570" as="geometry" />
+          <mxGeometry height="60" width="120" x="234" y="700" as="geometry" />
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-18" edge="1" parent="1" source="5tUappil_dht_1FT31QH-10" style="endArrow=classic;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-16" value="">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="280" y="510" as="sourcePoint" />
-            <mxPoint x="230" y="570" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-17" edge="1" parent="1" source="5tUappil_dht_1FT31QH-10" style="endArrow=classic;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;labelBorderColor=default;" target="5tUappil_dht_1FT31QH-13" value="realtime price feeds">
-          <mxGeometry height="50" relative="1" width="50" x="-1" as="geometry">
-            <mxPoint as="offset" />
-            <mxPoint x="200" y="390" as="sourcePoint" />
-            <mxPoint x="250" y="340" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-19" edge="1" parent="1" source="5tUappil_dht_1FT31QH-20" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;fontSize=12;startSize=8;endSize=8;" target="5tUappil_dht_1FT31QH-20" value="`">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-35" edge="1" parent="1" source="5tUappil_dht_1FT31QH-20" style="shape=filledEdge;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;elbow=vertical;startArrow=classic;startFill=1;edgeStyle=orthogonalEdgeStyle;" target="5tUappil_dht_1FT31QH-16">
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-3" edge="1" parent="1" source="5tUappil_dht_1FT31QH-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;">
           <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="220" y="510" />
-              <mxPoint x="220" y="600" />
-            </Array>
+            <mxPoint x="140" y="410" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;fontColor=default;strokeColor=#005700;" value="gRPC (model-configuration)" vertex="1">
-          <mxGeometry height="60" width="120" x="80" y="450" as="geometry" />
+        <mxCell id="5tUappil_dht_1FT31QH-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;fontColor=default;strokeColor=#005700;" value="gRPC" vertex="1">
+          <mxGeometry height="60" width="120" x="235" y="490" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-23" edge="1" parent="1" source="5tUappil_dht_1FT31QH-24" style="edgeStyle=none;curved=1;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fontSize=9;startSize=11;endSize=8;fillColor=#60a917;strokeColor=light-dark(#2D7600, #26f23e);labelBackgroundColor=none;dashed=1;fontStyle=1" target="5tUappil_dht_1FT31QH-9" value="Hot&lt;div&gt;Reload&lt;/div&gt;">
           <mxGeometry relative="1" as="geometry" />
@@ -76,17 +53,8 @@
         <mxCell id="5tUappil_dht_1FT31QH-24" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Model Configuration Service" vertex="1">
           <mxGeometry height="60" width="120" x="80" y="350" as="geometry" />
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-25" edge="1" parent="1" source="5tUappil_dht_1FT31QH-20" style="endArrow=classic;html=1;rounded=0;fontSize=12;startSize=8;endSize=8;curved=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-24" value="">
-          <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="200" y="370" as="sourcePoint" />
-            <mxPoint x="250" y="320" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=2;fontFamily=Lucida Console;fontSize=10;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" value="Third&amp;nbsp;&lt;div&gt;party&amp;nbsp;&lt;/div&gt;&lt;div&gt;clients&lt;/div&gt;" vertex="1">
-          <mxGeometry height="60" width="120" x="390" y="570" as="geometry" />
-        </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;" value="" vertex="1">
-          <mxGeometry height="110" width="240" x="60" y="230" as="geometry" />
+          <mxGeometry height="60" width="120" x="369" y="700" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-5" edge="1" parent="1" source="5tUappil_dht_1FT31QH-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=12;startSize=8;endSize=8;exitX=-0.006;exitY=0.172;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitPerimeter=0;" target="5tUappil_dht_1FT31QH-29" value="">
           <mxGeometry relative="1" as="geometry">
@@ -97,11 +65,37 @@
             <mxPoint x="20" y="320" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="5tUappil_dht_1FT31QH-29" parent="1" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" value="Instruments table" vertex="1">
-          <mxGeometry height="90" width="80" x="100" y="235" as="geometry" />
+        <mxCell id="5tUappil_dht_1FT31QH-29" parent="1" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#647687;fontColor=#ffffff;strokeColor=#314354;" value="MarketData.db" vertex="1">
+          <mxGeometry height="90" width="90" x="95" y="235" as="geometry" />
         </mxCell>
         <mxCell id="5tUappil_dht_1FT31QH-37" edge="1" parent="1" source="5tUappil_dht_1FT31QH-24" style="edgeStyle=orthogonalEdgeStyle;shape=filledEdge;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="5tUappil_dht_1FT31QH-29" value="">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=#2D7600;fillColor=#60a917;align=center;verticalAlign=middle;rounded=0;fontColor=#ffffff;" value="Green = server-side&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));&quot;&gt;container*&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="55" width="120" x="460" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-2" edge="1" parent="1" source="5tUappil_dht_1FT31QH-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startSize=6;textOpacity=50;" target="5tUappil_dht_1FT31QH-24" value="Model config,&lt;div&gt;Add/remove instrument,&lt;/div&gt;&lt;div&gt;historical prices&lt;/div&gt;">
+          <mxGeometry relative="1" x="0.2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="MarketData.Client.Grpc" vertex="1">
+          <mxGeometry height="35" width="145" x="304.5" y="608" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="MarketData.Client.Rest*" vertex="1">
+          <mxGeometry height="35" width="145" x="137" y="608" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-11" edge="1" parent="1" source="gYUl0khqxb1LeJAdZpYp-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-12" edge="1" parent="1" source="gYUl0khqxb1LeJAdZpYp-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-13" edge="1" parent="1" source="gYUl0khqxb1LeJAdZpYp-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" target="5tUappil_dht_1FT31QH-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gYUl0khqxb1LeJAdZpYp-10" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=#2D7600;fillColor=#60a917;align=center;verticalAlign=middle;rounded=0;fontColor=#ffffff;" value="Shared client packages" vertex="1">
+          <mxGeometry height="30" width="100" x="462" y="600" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

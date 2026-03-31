@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="C:\halljon\src\MarketData\MarketData.Client.Grpc\Services\PriceService.cs" Link="PriceService.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.34.1" />
     <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageReference Include="Grpc.Net.ClientFactory" Version="2.76.0" />
@@ -24,10 +20,6 @@
 	<ItemGroup>
 		<Protobuf Include="..\MarketData\Protos\marketdata.proto" GrpcServices="Client" Link="Protos\marketdata.proto" />
 		<Protobuf Include="..\MarketData\Protos\modelconfiguration.proto" GrpcServices="Client" Link="Protos\modelconfiguration.proto" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Services\" />
 	</ItemGroup>
 
 </Project>
