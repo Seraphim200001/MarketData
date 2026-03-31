@@ -1,5 +1,5 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Grpc;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +29,7 @@ public class ModelConfigViewModelFactory
     /// <summary>
     /// Creates the appropriate view model for the given model type and configuration
     /// </summary>
-    public ModelConfigViewModelBase? Create(string modelType, ConfigurationsResponse config)
+    public ModelConfigViewModelBase? Create(string modelType, InstrumentConfig config)
     {
         _loggerFactory.CreateLogger<ModelConfigViewModelFactory>()
             .LogInformation("Creating model config view model for instrument {InstrumentName} " +

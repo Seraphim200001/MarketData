@@ -1,5 +1,5 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Grpc;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels.ModelConfigs;
 using Microsoft.Extensions.Logging;
@@ -73,7 +73,7 @@ public class ModelConfigPublisher : IDisposable, IModelConfigPublisher
         }
     }
 
-    public async Task<(bool success, ConfigurationsResponse? configs)> TrySwitchModel(CancellationToken ct = default)
+    public async Task<(bool success, InstrumentConfig? configs)> TrySwitchModel(CancellationToken ct = default)
     {
         try
         {

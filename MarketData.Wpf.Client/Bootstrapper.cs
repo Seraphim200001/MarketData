@@ -1,7 +1,8 @@
-﻿using Grpc.Net.Client;
+using Grpc.Net.Client;
 using MarketData.Client.Grpc;
 using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Grpc.Services;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,19 +48,24 @@ internal static class Bootstrapper
 
         services.AddSingleton(sp => GrpcChannel.ForAddress(sp.GetGrpcServerUrl(), DefaultChannelOptions));
 
-        services.AddSingleton<IGrpcConnectionInitializer>(sp =>
-            new GrpcConnectionInitializer(
-                sp.GetRequiredService<GrpcChannel>(),
-                sp.GetRequiredService<ILogger<GrpcConnectionInitializer>>()));
+        services.AddSingleton<IMarketDataGrpcConnectionilder>(sp =>
+            new MarketDataGrpcConnectionBuilder(
+                sp.GetRequiredService<IOptions<GrpcSettings>>(),
+                sp.GetRequiredService<ILogger<MarketDataGrpcConnectionBuilder>>()));
 
         services.AddSingleton<IPriceService, PriceService>(sp => 
             new PriceService(
-                sp.GetRequiredService<GrpcChannel>(),
+                sp.GetRequiredService<IMarketDataGrpcConnectionilder>(),
                 sp.GetRequiredService<ILogger<PriceService>>()));
+
+        services.AddSingleton<IInstrumentService, InstrumentService>(sp =>
+            new InstrumentService(
+                sp.GetRequiredService<IMarketDataGrpcConnectionilder>(),
+                sp.GetRequiredService<ILogger<InstrumentService>>()));
 
         services.AddSingleton<IModelConfigService, ModelConfigService>(sp =>
             new ModelConfigService(
-                sp.GetRequiredService<GrpcChannel>(),
+                sp.GetRequiredService<IMarketDataGrpcConnectionilder>(),
                 sp.GetRequiredService<ILogger<ModelConfigService>>()));
 
         return services;
@@ -73,7 +79,7 @@ internal static class Bootstrapper
         var dialogService = serviceProvider.GetRequiredService<IDialogService>();
         Logger.Information("Initializing gRPC connection (to avoid race conditions with lazy-initialization)");
 
-        var connectionInitializer = serviceProvider.GetRequiredService<IGrpcConnectionInitializer>();
+        var connectionInitializer = serviceProvider.GetRequiredService<IMarketDataGrpcConnectionilder>();
 
         // Run on thread pool to avoid sync context deadlock
         var initTask = Task.Run(async () => await connectionInitializer.InitializeAsync());

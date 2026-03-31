@@ -1,5 +1,5 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Grpc;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Shared;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ public class RandomAdditiveWalkConfigViewModel : ModelConfigViewModelBase
     private readonly IModelConfigService _modelConfigService;
     private string _validationMessage = string.Empty;
 
-    public RandomAdditiveWalkConfigViewModel(string instrumentName, RandomAdditiveWalkConfigData config,
+    public RandomAdditiveWalkConfigViewModel(string instrumentName, RandomAdditiveWalkConfig config,
         IModelConfigService modelConfigService, IDialogService dialogService, ILogger<RandomAdditiveWalkConfigViewModel> logger)
         : base(instrumentName, dialogService, logger)
     {
@@ -88,7 +88,7 @@ public class RandomAdditiveWalkConfigViewModel : ModelConfigViewModelBase
 
         await _modelConfigService.UpdateRandomAdditiveWalkConfigAsync(
             InstrumentName,
-            WalkSteps.Select(s => (s.Probability, s.StepValue)).ToList(),
+            WalkSteps.Select(s => new WalkStep(s.Probability, s.StepValue)),
             ct);
 
         return true;

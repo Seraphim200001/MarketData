@@ -22,4 +22,8 @@
 		<Protobuf Include="..\MarketData\Protos\modelconfiguration.proto" GrpcServices="Client" Link="Protos\modelconfiguration.proto" />
 	</ItemGroup>
 
+  <ItemGroup>
+	<ProjectReference Include="..\MarketData.Client.Shared\MarketData.Client.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

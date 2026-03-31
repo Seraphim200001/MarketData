@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MarketData.Client.Grpc\MarketData.Client.Grpc.csproj" />
+    <ProjectReference Include="..\MarketData.Client.Shared\MarketData.Client.Shared.csproj" />
   </ItemGroup>
 
 </Project>

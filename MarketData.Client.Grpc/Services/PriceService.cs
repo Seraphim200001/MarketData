@@ -1,9 +1,12 @@
 using Grpc.Core;
 using Grpc.Net.Client;
 using MarketData.Client.Grpc.Configuration;
+using MarketData.Client.Shared.Services;
 using MarketData.Grpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
+using SharedModels = MarketData.Client.Shared.Models;
 
 namespace MarketData.Client.Grpc.Services;
 
@@ -15,7 +18,7 @@ public class PriceService : IPriceService, IDisposable
 
     private bool _disposed;
 
-    public PriceService(IOptions<GrpcSettings> grpcSettings, ILogger<PriceService> logger) 
+    public PriceService(IOptions<GrpcSettings> grpcSettings, ILogger<PriceService> logger)
         : this(grpcSettings.Value, logger)
     {
     }
@@ -27,33 +30,43 @@ public class PriceService : IPriceService, IDisposable
         _client = new MarketDataService.MarketDataServiceClient(_channel);
     }
 
-    public PriceService(GrpcChannel channel, ILogger<PriceService> logger)
+    public PriceService(IMarketDataGrpcConnectionilder grpcConnection, ILogger<PriceService> logger)
     {
         _logger = logger;
-        _channel = channel;
+        _channel = grpcConnection.Channel;
         _client = new MarketDataService.MarketDataServiceClient(_channel);
     }
 
-    public async Task<HistoricalDataResponse> GetHistoricalDataAsync(
+    public async Task<IReadOnlyList<SharedModels.PriceUpdate>> GetHistoricalDataAsync(
         string instrument, long startTimestamp, long endTimestamp, CancellationToken ct = default)
     {
         _logger.LogInformation("Requesting historical data for instrument {Instrument} from {Start} to {End}",
             instrument, new DateTime(startTimestamp, DateTimeKind.Utc), new DateTime(endTimestamp, DateTimeKind.Utc));
 
-        return await _client.GetHistoricalDataAsync(new HistoricalDataRequest
+        var response = await _client.GetHistoricalDataAsync(new HistoricalDataRequest
         {
             Instrument = instrument,
             StartTimestamp = startTimestamp,
             EndTimestamp = endTimestamp
         }, cancellationToken: ct);
+
+        return response.Prices
+            .Select(p => new SharedModels.PriceUpdate(p.Instrument, p.Value, p.Timestamp))
+            .ToList();
     }
 
-    public AsyncServerStreamingCall<PriceUpdate> SubscribeToPrices(string instrument, CancellationToken ct = default)
+    public async IAsyncEnumerable<SharedModels.PriceUpdate> SubscribeToPricesAsync(
+        string instrument, [EnumeratorCancellation] CancellationToken ct = default)
     {
         _logger.LogInformation("Subscribing to price stream for instrument {Instrument}", instrument);
         var request = new SubscribeRequest();
         request.Instruments.Add(instrument);
-        return _client.SubscribeToPrices(request, cancellationToken: ct);
+
+        using var call = _client.SubscribeToPrices(request, cancellationToken: ct);
+        await foreach (var update in call.ResponseStream.ReadAllAsync(ct))
+        {
+            yield return new SharedModels.PriceUpdate(update.Instrument, update.Value, update.Timestamp);
+        }
     }
 
     public void Dispose()
@@ -73,4 +86,13 @@ public class PriceService : IPriceService, IDisposable
             _disposed = true;
         }
     }
+
+    //public async  Task<SharedModels.PriceUpdate?> GetLatestPriceAsync(string instrument, CancellationToken ct = default)
+    //{
+    //    var price = (await _client.GetHistoricalDataAsync(new HistoricalDataRequest { Instrument = instrument }))
+    //        .OrderByDescending(p => p.Timestamp)
+    //        .FirstOrDefault();
+
+    //    return price;
+    //}
 }

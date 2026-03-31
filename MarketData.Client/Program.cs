@@ -31,6 +31,7 @@ internal class Program
             using var loggerFactory = new LoggerFactory();
             using var grpcConnection = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
             using var modelConfigService = new ModelConfigService(grpcConnection, loggerFactory.CreateLogger<ModelConfigService>());
+            using var instrumentService = new InstrumentService(grpcConnection, loggerFactory.CreateLogger<InstrumentService>());
             using var priceService = new PriceService(grpcConnection, loggerFactory.CreateLogger<PriceService>());
 
             var priceStreamer = new PriceStreamer(priceService);
@@ -47,8 +48,8 @@ internal class Program
                 Console.WriteLine($"Press (Ctrl+C) to exit.");
                 Console.WriteLine();
 
-                var availableInstruments = (await modelConfigService.GetAllInstrumentsAsync())
-                    .Configurations.Select(c => c.InstrumentName);
+                var availableInstruments = (await instrumentService.GetAllInstrumentsAsync())
+                    .Select(c => c.InstrumentName);
                 Console.WriteLine($"Available instruments: {string.Join(", ", availableInstruments)}");
 
                 var sep = new string('=', 30);
@@ -81,7 +82,7 @@ internal class Program
                         Console.WriteLine("Invalid initial price");
                         continue;
                     }
-                    await modelConfigService.TryAddInstrumentAsync(name, tickIntervalMs, initialPrice);
+                    await instrumentService.TryAddInstrumentAsync(name, tickIntervalMs, initialPrice);
                 }
                 else if (input == "2")
                 {
@@ -92,12 +93,12 @@ internal class Program
                         Console.WriteLine("Invalid instrument name");
                         continue;
                     }
-                    await modelConfigService.TryRemoveInstrumentAsync(name);
+                    await instrumentService.TryRemoveInstrumentAsync(name);
                 }
                 else if (input == "3")
                 {
-                    var res = await modelConfigService.GetAllInstrumentsAsync();
-                    var configs = JsonSerializer.Serialize(res.Configurations);
+                    var res = await instrumentService.GetAllInstrumentsAsync();
+                    var configs = JsonSerializer.Serialize(res);
                     Console.WriteLine(configs);
                 }
                 else if (input == "4")

@@ -1,4 +1,4 @@
-﻿using MarketData.Client.Grpc.Services;
+﻿using MarketData.Client.Shared.Services;
 
 namespace MarketData.Client;
 
@@ -47,11 +47,8 @@ public class PriceStreamer
 
         try
         {
-            using var call = _priceService.SubscribeToPrices(instrument, cts.Token);
-
-            while (await call.ResponseStream.MoveNext(cts.Token))
+            await foreach (var priceUpdate in _priceService.SubscribeToPricesAsync(instrument, cts.Token))
             {
-                var priceUpdate = call.ResponseStream.Current;
                 var timestamp = new DateTime(priceUpdate.Timestamp);
                 Console.WriteLine($"[{timestamp:HH:mm:ss.fff}] {priceUpdate.Instrument,-10} {priceUpdate.Value:F4}");
             }

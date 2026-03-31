@@ -1,4 +1,4 @@
-﻿using MarketData.Grpc;
+﻿using MarketData.Client.Shared.Models;
 using MarketData.Wpf.Client.ViewModels.ModelConfigs;
 
 namespace MarketData.Wpf.Client.Services
@@ -9,6 +9,6 @@ namespace MarketData.Wpf.Client.Services
         void LogPublishResultsSummary();
         Task<bool> PublishTickInterval(int tickIntervalMs, CancellationToken ct = default);
         Task<bool> TryPublishModelParams(ModelConfigViewModelBase activeConfigVm, CancellationToken ct = default);
-        Task<(bool success, ConfigurationsResponse? configs)> TrySwitchModel(CancellationToken ct = default);
+        Task<(bool success, InstrumentConfig? configs)> TrySwitchModel(CancellationToken ct = default);
     }
 }
