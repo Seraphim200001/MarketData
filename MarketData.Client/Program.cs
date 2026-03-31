@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using MarketData.Client;
 using MarketData.Client.Grpc;
 using System.Text.Json;
-using Grpc.Net.Client;
 
 internal class Program
 {
@@ -30,16 +29,15 @@ internal class Program
                 .Get<GrpcSettings>() ?? new GrpcSettings();
 
             using var loggerFactory = new LoggerFactory();
-            using var grpcChannel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
-            using var modelConfigService = new ModelConfigService(grpcChannel, loggerFactory.CreateLogger<ModelConfigService>());
-            using var priceService = new PriceService(grpcChannel, loggerFactory.CreateLogger<PriceService>());
+            using var grpcConnection = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
+            using var modelConfigService = new ModelConfigService(grpcConnection, loggerFactory.CreateLogger<ModelConfigService>());
+            using var priceService = new PriceService(grpcConnection, loggerFactory.CreateLogger<PriceService>());
 
             var priceStreamer = new PriceStreamer(priceService);
 
             // Initialize gRPC connections to avoid race conditions
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
-            var grpcConnectionInitializer = new GrpcConnectionInitializer(grpcChannel);
-            await grpcConnectionInitializer.InitializeAsync();
+            await grpcConnection.InitializeAsync();
             Log.Information("gRPC connections ready");
 
             while (true)
