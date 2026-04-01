@@ -28,7 +28,7 @@ public class ModelConfigService : IModelConfigService, IDisposable
         _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
     }
 
-    public ModelConfigService(IMarketDataGrpcConnectionilder grpcConnection, ILogger<ModelConfigService> logger)
+    public ModelConfigService(IMarketDataGrpcConnectionBuilder grpcConnection, ILogger<ModelConfigService> logger)
     {
         _logger = logger;
         _channel = grpcConnection.Channel;

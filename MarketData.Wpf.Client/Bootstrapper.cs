@@ -46,7 +46,7 @@ internal static class Bootstrapper
         Logger.Information("Configuring gRPC clients with server URL from configuration");
 
         services
-            .AddGrpcConnections<IMarketDataGrpcConnectionilder, MarketDataGrpcConnectionBuilder>(
+            .AddGrpcConnections<IMarketDataGrpcConnectionBuilder, MarketDataGrpcConnectionBuilder>(
                 channelOptions: new()
                 {
                     InitialReconnectBackoff = TimeSpan.FromMilliseconds(100),
@@ -64,7 +64,7 @@ internal static class Bootstrapper
         var dialogService = serviceProvider.GetRequiredService<IDialogService>();
         Logger.Information("Initializing gRPC connection (to avoid race conditions with lazy-initialization)");
 
-        var connectionInitializer = serviceProvider.GetRequiredService<IMarketDataGrpcConnectionilder>();
+        var connectionInitializer = serviceProvider.GetRequiredService<IMarketDataGrpcConnectionBuilder>();
 
         // Run on thread pool to avoid sync context deadlock
         var initTask = Task.Run(async () => await connectionInitializer.InitializeAsync());

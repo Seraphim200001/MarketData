@@ -30,7 +30,7 @@ public class PriceService : IPriceService, IDisposable
         _client = new MarketDataService.MarketDataServiceClient(_channel);
     }
 
-    public PriceService(IMarketDataGrpcConnectionilder grpcConnection, ILogger<PriceService> logger)
+    public PriceService(IMarketDataGrpcConnectionBuilder grpcConnection, ILogger<PriceService> logger)
     {
         _logger = logger;
         _channel = grpcConnection.Channel;

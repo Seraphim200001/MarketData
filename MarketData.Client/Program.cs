@@ -34,7 +34,7 @@ internal class Program
             var services = new ServiceCollection();
             services.AddLogging(b => b.AddSerilog());
             services
-                .AddGrpcConnections<IMarketDataGrpcConnectionilder, MarketDataGrpcConnectionBuilder>(grpcSettings)
+                .AddGrpcConnections<IMarketDataGrpcConnectionBuilder, MarketDataGrpcConnectionBuilder>(grpcSettings)
                 .With<IPriceService, PriceService>()
                 .With<IInstrumentService, InstrumentService>()
                 .With<IModelConfigService, ModelConfigService>();
@@ -43,7 +43,7 @@ internal class Program
             await using var sp = services.BuildServiceProvider();
 
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
-            await sp.GetRequiredService<IMarketDataGrpcConnectionilder>().InitializeAsync();
+            await sp.GetRequiredService<IMarketDataGrpcConnectionBuilder>().InitializeAsync();
             Log.Information("gRPC connections ready");
 
             var instrumentService = sp.GetRequiredService<IInstrumentService>();

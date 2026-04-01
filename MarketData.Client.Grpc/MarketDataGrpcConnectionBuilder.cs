@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace MarketData.Client.Grpc;
 
-public class MarketDataGrpcConnectionBuilder : IMarketDataGrpcConnectionilder, IDisposable
+public class MarketDataGrpcConnectionBuilder : IMarketDataGrpcConnectionBuilder, IDisposable
 {
     private readonly ILogger<MarketDataGrpcConnectionBuilder> _logger;
     private readonly GrpcChannel _channel;

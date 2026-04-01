@@ -2,7 +2,7 @@ using Grpc.Net.Client;
 
 namespace MarketData.Client.Grpc;
 
-public interface IMarketDataGrpcConnectionilder : IDisposable
+public interface IMarketDataGrpcConnectionBuilder : IDisposable
 {
     GrpcChannel Channel { get; }
 

@@ -28,7 +28,7 @@ public class InstrumentService : IInstrumentService, IDisposable
         _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
     }
 
-    public InstrumentService(IMarketDataGrpcConnectionilder grpcConnection, ILogger<InstrumentService> logger)
+    public InstrumentService(IMarketDataGrpcConnectionBuilder grpcConnection, ILogger<InstrumentService> logger)
     {
         _logger = logger;
         _channel = grpcConnection.Channel;
