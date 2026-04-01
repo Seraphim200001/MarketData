@@ -11,9 +11,9 @@ namespace MarketData.Controllers;
 public class PricesController : ControllerBase
 {
     private readonly MarketDataContext _context;
-    private readonly ILogger<PricesController> _logger;
+    private readonly ILogger<PricesController>? _logger;
 
-    public PricesController(MarketDataContext context, ILogger<PricesController> logger)
+    public PricesController(MarketDataContext context, ILogger<PricesController>? logger)
     {
         _context = context;
         _logger = logger;
