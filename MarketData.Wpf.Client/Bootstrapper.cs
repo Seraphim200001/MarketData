@@ -1,8 +1,7 @@
 ﻿using Grpc.Net.Client;
-using MarketData.Client.Shared.Configuration;
-using MarketData.Client.Shared.Services;
-using MarketData.Client.Wpf.Services;
-using MarketData.Grpc;
+using MarketData.Client.Grpc;
+using MarketData.Client.Grpc.Configuration;
+using MarketData.Client.Grpc.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +32,6 @@ internal static class Bootstrapper
         services.ConfigureGrpcClients();
 
         Logger.Information("Registering application specific services");
-        services.AddSingleton<IModelConfigService, ModelConfigService>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddTransient<InstrumentViewModelFactory>();
 
@@ -54,16 +52,21 @@ internal static class Bootstrapper
                 sp.GetRequiredService<GrpcChannel>(),
                 sp.GetRequiredService<ILogger<GrpcConnectionInitializer>>()));
 
-        services.AddSingleton<MarketDataService.MarketDataServiceClient>(sp =>
-            new MarketDataService.MarketDataServiceClient(sp.GetRequiredService<GrpcChannel>()));
+        services.AddSingleton<IPriceService, PriceService>(sp => 
+            new PriceService(
+                sp.GetRequiredService<GrpcChannel>(),
+                sp.GetRequiredService<ILogger<PriceService>>()));
 
-        services.AddSingleton<ModelConfigurationService.ModelConfigurationServiceClient>(sp =>
-            new ModelConfigurationService.ModelConfigurationServiceClient(sp.GetRequiredService<GrpcChannel>()));
+        services.AddSingleton<IModelConfigService, ModelConfigService>(sp =>
+            new ModelConfigService(
+                sp.GetRequiredService<GrpcChannel>(),
+                sp.GetRequiredService<ILogger<ModelConfigService>>()));
 
         return services;
     }
 
-    internal static string GetGrpcServerUrl(this IServiceProvider sp) => sp.GetRequiredService<IOptions<GrpcSettings>>().Value.ServerUrl;
+    internal static string GetGrpcServerUrl(this IServiceProvider sp) => 
+        sp.GetRequiredService<IOptions<GrpcSettings>>().Value.ServerUrl;
 
     internal static void InitializeGrpcConnections(IServiceProvider serviceProvider)
     {

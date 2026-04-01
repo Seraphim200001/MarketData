@@ -4,10 +4,11 @@ The MarketData solution is a distributed system for simulating, generating, and 
 
 My motivations were to show off my skills in API design and WPF in a fintech system. **It is purely a hobby project.**
 
-I first wanted to create a small application that could stream market data, and another application that could "book" (fake) trades based on that data. After soon realizing that market data would come at some expense I decided to start simulating that data. I implemented some basic models. I then wanted to see what effect different model parameters would have on the ticking prices, so one thing led to another and this is where I have got to.
+I first wanted to create a small application that could stream market data, and another application that could "book" (fake) trades based on that data. After soon realizing that market data would come at some expense I decided to start simulating that data. I implemented some basic models. Going forward, there is a lot that can be done to get this into a scalable tool with plugins. Key areas of growth on server-side includes adding new simulation models, splitting behemouth PriceGenerator service into distributed Generate Price -> Enrich (e.g. static data) -> post to API consumers & update database. Other future featues include moving to a more sophisticated RDBMS and eventually being able to trade on the data in a separate app.
 
-This is still work in progress, but see below where I have got to so far! Key features like the trading screen, security, containerisation and a more scalable RDBMS (currently I use SQLite) are yet to be implemented.
+This repository is open to contributors - please get in touch via the GitHub Issues tab or email marketdata.oss.szigh@gmail.com !
 
+Jonas
 
 ---
 
@@ -31,6 +32,8 @@ This is still work in progress, but see below where I have got to so far! Key fe
 ## System Architecture
 
 ![Architecture diagram](images/Architecture.drawio.png)
+
+\* *To be implemented*
 
 ---
 
@@ -84,15 +87,15 @@ The core backend service that generates and streams real-time market data to cli
 ### 2. **MarketData.Wpf.Client** (WPF Application)
 **Type:** WPF Desktop Application  
 **Framework:** .NET 10 Windows  
-**Key Technologies:** WPF, gRPC Client, FancyCandles (chart control), MVVM pattern
+**Key Technologies:** WPF MVVM, gRPC Client, FancyCandles (chart control)
 
 **Purpose:**  
 Rich desktop client for visualizing market data with real-time candlestick charts and model configuration.
 
 **Key Components:**
-- **ViewModels:** MVVM pattern with `MainWindowViewModel`, `InstrumentViewModel`, `InstrumentTabViewModel`
+- **ViewModels:** MVVM pattern with `MainWindowViewModel`, `InstrumentViewModel` (per tab/instrument, includes ticking prices and candle chart), `ModelConfigViewModel` (for editing model parameters)
 - **Views:** Multi-tab interface with candlestick charts and model configuration panels
-- **gRPC Client:** Subscribes to real-time price streams from the server
+- **gRPC Client:** Uses MarketData.Client.Grpc for Grpc services for price streaming and model configuration
 - **Chart Integration:** FancyCandles library for professional candlestick visualization
 - **Model Configuration UI:** Dynamic forms for editing simulation parameters
 
@@ -104,32 +107,12 @@ Rich desktop client for visualizing market data with real-time candlestick chart
 - Async initialization 
 
 **Dependencies:**
-- `MarketData.Wpf.Shared` - Shared WPF utilities (RelayCommand, ViewModelBase)
-- `MarketData.Client.Shared` - Shared gRPC configuration
-- Proto files linked from `MarketData` project
+- `MarketData.Wpf.Shared` - Shared WPF utilities (RelayCommand, ViewModelBase, behaviours, converters)
+- `MarketData.Client.Grpc` - Shared gRPC services and configuration
 
 ---
 
-### 3. **MarketData.Client** (Console Application)
-**Type:** Console Application  
-**Framework:** .NET 10
-
-**Purpose:**  
-Lightweight console client for subscribing to market data streams. Useful for testing and demonstrations.
-
-**Key Features:**
-- Simple command-line interface
-- Subscribe to multiple instruments
-- Real-time console output of price updates
-- Graceful shutdown on Ctrl+C
-
-**Dependencies:**
-- `MarketData.Client.Shared` - Shared gRPC configuration
-- Proto files from `MarketData` project
-
----
-
-### 4. **MarketData.PriceSimulator** (Class Library)
+### 3. **MarketData.PriceSimulator** (Class Library)
 **Type:** Class Library  
 **Framework:** .NET 10
 
@@ -158,19 +141,7 @@ public interface IPriceSimulator
 
 ---
 
-### 5. **FastSimulate** (Console Application)
-**Type:** Quick Testing Console App  
-**Framework:** .NET 10
-
-**Purpose:**  
-Standalone console application for rapidly testing and visualizing price simulator behavior without the full server infrastructure.
-
-**Use Case:**  
-Quick iteration and tuning of simulator parameters during development.
-
----
-
-### 6. **MarketData.Wpf.Shared** (Class Library)
+### 4. **MarketData.Wpf.Shared** (Class Library)
 **Type:** Class Library  
 **Framework:** .NET 10 Windows
 
@@ -184,15 +155,54 @@ Shared WPF infrastructure components.
 
 ---
 
-### 7. **MarketData.Client.Shared** (Class Library)
+### 5. **MarketData.Client.Grpc** (Class Library)
 **Type:** Class Library  
 **Framework:** .NET 10
 
 **Purpose:**  
-Shared configuration classes for gRPC clients.
+Shared configuration and service classes for gRPC clients.
 
 **Contents:**
+- Services: `IPriceService` (for price streaming, historical prices), `IModelConfigService` (for model configuration management)
+- `GrpcConnectionInitialization` - optional helper for initializing gRPC channel and clients which can help kick start the connection before attempting service calls.
 - `GrpcSettings` - Configuration model for server URL binding
+
+**Dependencies:**
+- proto files from `MarketData` project for gRPC service definitions
+
+---
+
+### Console apps
+
+#### **FastSimulate**
+**Type:** Quick Testing Console App  
+**Framework:** .NET 10
+
+**Purpose:**  
+Standalone console application for rapidly testing and visualizing price simulator behavior without the full server infrastructure.
+
+**Use Case:**  
+Quick iteration and tuning of simulator parameters during development.
+
+---
+
+#### **MarketData.Client**
+
+**No future enhancements planned, soon to be deprecated and replaced with a more feature-rich console client in another repository**
+
+**Type:** Console Application  
+**Framework:** .NET 10
+
+**Purpose:**  
+Lightweight console client for subscribing to market data streams. Useful for testing and demonstrations.
+
+**Key Features:**
+- Simple command-line interface
+- Subscribe to multiple instruments
+- Real-time console output of price updates
+
+**Dependencies:**
+- `MarketData.Client.Grpc` - Shared gRPC services and configuration
 
 ---
 
@@ -206,7 +216,8 @@ Shared configuration classes for gRPC clients.
             → [New Price]
                 → [SQLite DB]
                 → [gRPC Broadcast]
-                    → [Connected Clients]
+                    → [MarketData.Client.Grpc]
+                        → [Connected Clients]
 ```
 
 ### 2. Model Configuration Flow
@@ -259,6 +270,10 @@ Entity Framework DbContext abstracts data access.
 
 ### gRPC Services
 
+gRPC services are implemented in MarketData.Client.Grpc and client applications (e.g. WPF client) can consume these services for real-time price updates and model configuration management.
+
+I will soon be implementing a console app that shows a minimal consumption of the gRPC services, but for now the WPF client is the main consumer. The long term goal is to have MarketData.Client.Grpc packaged and then you just need to configure the url, access token and register the services (IPriceService, IModelConfigService).
+
 #### MarketDataService
 **Proto:** `marketdata.proto`
 
@@ -292,6 +307,7 @@ service ModelConfigurationService {
 **Purpose:** Remote configuration management for price simulation models
 
 **Features:**
+- Get existing instruments and their configurations, add/remove instruments
 - Switch active model per instrument
 - Update model-specific parameters
 - Update tick intervals
@@ -322,7 +338,7 @@ service ModelConfigurationService {
 ### Server Configuration
 **File:** `MarketData/appsettings.json`
 - Database connection string
-- `MarketDataGeneratorOptions` - Generator settings
+- `MarketDataGeneratorOptions` - Generator settings (including settings to throttle database/grpc publish if needed).
 - Kestrel endpoints for HTTP/HTTPS/gRPC
 
 ### Client Configuration
@@ -349,17 +365,14 @@ service ModelConfigurationService {
      ```bash
      dotnet run --project MarketData --seed-data
      ```
+    
+    To test REST API, I have included Scalar for OpenAPI documentation and testing. This is hosted at `https://localhost:7264/scalar/v1` by default.
 
 3. **Start WPF Client:**
    ```bash
    dotnet run --project MarketData.Wpf.Client
    ```
 
-4. **Start Console Client:**
-   ```bash
-   cd MarketData.Client
-   dotnet run
-   ```
 
 ### Notes & troubleshooting
 
@@ -513,3 +526,4 @@ Resources:
 **Created:** 2026  
 **License:** MIT  
 **Type:** Hobby Project / Portfolio Demonstration
+**Contact:** marketdata.oss.szigh@gmail.com
