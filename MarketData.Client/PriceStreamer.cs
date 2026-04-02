@@ -34,7 +34,7 @@ public class PriceStreamer
         var instrument = PromptInstrumentFromUser(instruments);
 
         _logger.LogInformation($"\nSubscribing to: {instrument}");
-        _logger.LogIn("Waiting for price updates... (Press ESC to exit)\n");
+        _logger.LogInformation("Waiting for price updates... (Press ESC to exit)\n");
 
         try
         {
