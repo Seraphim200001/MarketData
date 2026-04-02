@@ -50,6 +50,9 @@ public class PriceService : IPriceService, IDisposable
             EndTimestamp = endTimestamp
         }, cancellationToken: ct);
 
+        _logger.LogInformation("Received {Count} price updates for instrument {Instrument}",
+            response.Prices.Count, instrument);
+
         return response.Prices
             .Select(p => new SharedModels.PriceUpdate(p.Instrument, p.Value, p.Timestamp))
             .ToList();
@@ -63,6 +66,9 @@ public class PriceService : IPriceService, IDisposable
         request.Instruments.Add(instrument);
 
         using var call = _client.SubscribeToPrices(request, cancellationToken: ct);
+
+        _logger.LogInformation("Subscribed to price stream for instrument {Instrument}", instrument);
+
         await foreach (var update in call.ResponseStream.ReadAllAsync(ct))
         {
             yield return new SharedModels.PriceUpdate(update.Instrument, update.Value, update.Timestamp);

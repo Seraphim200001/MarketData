@@ -1,14 +1,12 @@
+using MarketData.Client.Grpc.Services;
+using MarketData.Client.Grpc.Configuration;
+using Microsoft.Extensions.Configuration;
+using Serilog;
+using Microsoft.Extensions.Logging;
 using MarketData.Client;
 using MarketData.Client.Grpc;
-using MarketData.Client.Grpc.Configuration;
-using MarketData.Client.Grpc.Services;
-using MarketData.Client.Shared.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using System.Text.Json;
-
-/* TO BE DEPRECATED */
+using Grpc.Net.Client;
 
 internal class Program
 {
@@ -31,23 +29,19 @@ internal class Program
             var grpcSettings = configuration.GetSection(GrpcSettings.SectionName)
                 .Get<GrpcSettings>() ?? new GrpcSettings();
 
-            var services = new ServiceCollection();
-            services.AddLogging(b => b.AddSerilog());
-            services
-                .AddGrpcConnections<IMarketDataGrpcConnectionBuilder, MarketDataGrpcConnectionBuilder>(grpcSettings)
-                .With<IPriceService, PriceService>()
-                .With<IInstrumentService, InstrumentService>()
-                .With<IModelConfigService, ModelConfigService>();
-            services.AddSingleton<PriceStreamer>();
+            using var loggerFactory = new LoggerFactory();
+            using var grpcChannel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
+            using var modelConfigService = new ModelConfigService(grpcSettings, loggerFactory.CreateLogger<ModelConfigService>());
+            using var priceService = new PriceService(grpcSettings, loggerFactory.CreateLogger<PriceService>());
+            using var instrumentService = new InstrumentService(grpcSettings, loggerFactory.CreateLogger<InstrumentService>());
 
-            await using var sp = services.BuildServiceProvider();
+            var priceStreamer = new PriceStreamer(priceService, instrumentService, loggerFactory.CreateLogger<PriceStreamer>());
 
+            // Initialize gRPC connections to avoid race conditions
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
-            await sp.GetRequiredService<IMarketDataGrpcConnectionBuilder>().InitializeAsync();
+            var grpcConnectionInitializer = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
+            await grpcConnectionInitializer.InitializeAsync();
             Log.Information("gRPC connections ready");
-
-            var instrumentService = sp.GetRequiredService<IInstrumentService>();
-            var priceStreamer = sp.GetRequiredService<PriceStreamer>();
 
             while (true)
             {
@@ -73,19 +67,19 @@ internal class Program
                 {
                     Console.Write("Enter instrument name: ");
                     var name = Console.ReadLine();
-                    if(string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(name))
                     {
                         Console.WriteLine("Invalid instrument name");
                         continue;
                     }
                     Console.Write("Enter tick interval (ms): ");
-                    if(!int.TryParse(Console.ReadLine(), out var tickIntervalMs))
+                    if (!int.TryParse(Console.ReadLine(), out var tickIntervalMs))
                     {
                         Console.WriteLine("Invalid tick interval");
                         continue;
                     }
                     Console.Write("Enter initial price: ");
-                    if(!double.TryParse(Console.ReadLine(), out var initialPrice))
+                    if (!double.TryParse(Console.ReadLine(), out var initialPrice))
                     {
                         Console.WriteLine("Invalid initial price");
                         continue;
@@ -96,7 +90,7 @@ internal class Program
                 {
                     Console.Write("Enter instrument name: ");
                     var name = Console.ReadLine();
-                    if(string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(name))
                     {
                         Console.WriteLine("Invalid instrument name");
                         continue;
@@ -106,7 +100,7 @@ internal class Program
                 else if (input == "3")
                 {
                     var res = await instrumentService.GetAllInstrumentsAsync();
-                    var configs = JsonSerializer.Serialize(res);
+                    var configs = JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true });
                     Console.WriteLine(configs);
                 }
                 else if (input == "4")

@@ -36,18 +36,18 @@ public sealed class GrpcServicesBuilder
 public static class GrpcServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <typeparamref name="TImpl"/> as the <typeparamref name="TConnection"/> singleton.
+    /// Registers <typeparamref name="TImpl"/> as the <typeparamref name="TConnectionBuilder"/> singleton.
     /// Pass <paramref name="settings"/> directly for console / test scenarios; omit it to resolve
     /// <see cref="IOptions{GrpcSettings}"/> from DI (e.g. WPF / ASP.NET apps).
     /// </summary>
-    public static GrpcServicesBuilder AddGrpcConnections<TConnection, TImpl>(
+    public static GrpcServicesBuilder AddGrpcConnections<TConnectionBuilder, TImpl>(
         this IServiceCollection services,
         GrpcSettings? settings = null,
         GrpcChannelOptions? channelOptions = null)
-                                                            where TConnection : class
-                                                            where TImpl : class, TConnection
+                                                            where TConnectionBuilder : class
+                                                            where TImpl : class, TConnectionBuilder
     {
-        services.AddSingleton<TConnection>(sp =>
+        services.AddSingleton<TConnectionBuilder>(sp =>
         {
             var resolvedSettings = settings ?? sp.GetRequiredService<IOptions<GrpcSettings>>().Value;
             return channelOptions is null
@@ -55,6 +55,6 @@ public static class GrpcServiceCollectionExtensions
                 : ActivatorUtilities.CreateInstance<TImpl>(sp, resolvedSettings, channelOptions);
         });
 
-        return new GrpcServicesBuilder(services, typeof(TConnection));
+        return new GrpcServicesBuilder(services, typeof(TConnectionBuilder));
     }
 }

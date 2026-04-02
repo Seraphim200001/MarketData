@@ -1,33 +1,84 @@
 ﻿using MarketData.Client.Shared.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MarketData.Client;
 
 public class PriceStreamer
 {
     private readonly IPriceService _priceService;
+    private readonly IInstrumentService _instrumentService;
+    private readonly ILogger<PriceStreamer> _logger;
 
-    public PriceStreamer(IPriceService priceService)
+    public PriceStreamer(IPriceService priceService,
+        IInstrumentService instrumentService,
+        ILogger<PriceStreamer> logger)
     {
         _priceService = priceService;
+        _instrumentService = instrumentService;
+        _logger = logger;
     }
 
     public async Task Start()
     {
-        Console.Write("Enter instrument to stream: ");
-        var input = Console.ReadLine();
+        using CancellationTokenSource cts = SetupCtsAndEscape();
 
-        if (string.IsNullOrWhiteSpace(input))
+        //pre-fetch available instruments to help user know what to input
+        var instruments = (await _instrumentService.GetAllInstrumentsAsync()).Select(c => c.InstrumentName);
+
+        if (!instruments.Any())
         {
-            Console.WriteLine("No instrument specified. Exiting.");
+            _logger.LogInformation("No instruments available to stream.");
             return;
         }
 
-        var instrument = input.Trim();
+        var instrument = PromptInstrumentFromUser(instruments);
 
-        Console.WriteLine($"\nSubscribing to: {instrument}");
-        Console.WriteLine("Waiting for price updates... (Press ESC to exit)\n");
+        _logger.LogInformation($"\nSubscribing to: {instrument}");
+        _logger.LogIn("Waiting for price updates... (Press ESC to exit)\n");
 
-        using var cts = new CancellationTokenSource();
+        try
+        {
+            await foreach (var priceUpdate in _priceService.SubscribeToPricesAsync(instrument, cts.Token))
+            {
+                var timestamp = new DateTime(priceUpdate.Timestamp);
+                Console.WriteLine($"[{timestamp:s}] {priceUpdate.Instrument,-10} {priceUpdate.Value:F4}");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("\nShutting down...");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\nError: {ex.Message}");
+        }
+    }
+
+    private static string PromptInstrumentFromUser(IEnumerable<string> availableInstruments)
+    {
+        string input = string.Empty;
+        do
+        {
+            Console.Write("Available instruments: ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(string.Join(", ", availableInstruments));
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine();
+            Console.Write("Enter instrument to stream: ");
+            var nullableInput = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(nullableInput))
+            {
+                Console.WriteLine("No instrument specified.");
+                continue;
+            }
+        } while (!availableInstruments.Contains(input, StringComparer.OrdinalIgnoreCase));
+
+        return input.Trim();
+    }
+
+    private static CancellationTokenSource SetupCtsAndEscape()
+    {
+        var cts = new CancellationTokenSource();
         _ = Task.Run(() =>
         {
             while (!cts.Token.IsCancellationRequested)
@@ -44,22 +95,6 @@ public class PriceStreamer
                 Thread.Sleep(100);
             }
         });
-
-        try
-        {
-            await foreach (var priceUpdate in _priceService.SubscribeToPricesAsync(instrument, cts.Token))
-            {
-                var timestamp = new DateTime(priceUpdate.Timestamp);
-                Console.WriteLine($"[{timestamp:HH:mm:ss.fff}] {priceUpdate.Instrument,-10} {priceUpdate.Value:F4}");
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            Console.WriteLine("\nShutting down...");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"\nError: {ex.Message}");
-        }
+        return cts;
     }
 }
