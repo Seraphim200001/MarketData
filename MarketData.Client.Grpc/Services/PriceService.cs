@@ -1,42 +1,21 @@
 using Grpc.Core;
-using Grpc.Net.Client;
-using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Shared.Services;
 using MarketData.Grpc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
 using SharedModels = MarketData.Client.Shared.Models;
 
 namespace MarketData.Client.Grpc.Services;
 
-public class PriceService : IPriceService, IDisposable
+public class PriceService : IPriceService
 {
     private readonly ILogger<PriceService> _logger;
-    private readonly GrpcChannel _channel;
     private readonly MarketDataService.MarketDataServiceClient _client;
-    private readonly IDisposable? _ownedChannel; // Track whether we own the channel to dispose it if necessary
-
-    private bool _disposed;
-
-    public PriceService(IOptions<GrpcSettings> grpcSettings, ILogger<PriceService> logger)
-        : this(grpcSettings.Value, logger)
-    {
-    }
-
-    public PriceService(GrpcSettings grpcSettings, ILogger<PriceService> logger)
-    {
-        _logger = logger;
-        _channel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
-        _ownedChannel = _channel;
-        _client = new MarketDataService.MarketDataServiceClient(_channel);
-    }
 
     public PriceService(IMarketDataGrpcConnectionBuilder grpcConnection, ILogger<PriceService> logger)
     {
         _logger = logger;
-        _channel = grpcConnection.Channel;
-        _client = new MarketDataService.MarketDataServiceClient(_channel);
+        _client = new MarketDataService.MarketDataServiceClient(grpcConnection.Channel);
     }
 
     public async Task<IReadOnlyList<SharedModels.PriceUpdate>> GetHistoricalDataAsync(
@@ -74,24 +53,6 @@ public class PriceService : IPriceService, IDisposable
         await foreach (var update in call.ResponseStream.ReadAllAsync(ct))
         {
             yield return new SharedModels.PriceUpdate(update.Instrument, update.Value, update.Timestamp);
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _ownedChannel?.Dispose();
-            }
-            _disposed = true;
         }
     }
 }

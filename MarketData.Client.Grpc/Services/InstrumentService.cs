@@ -1,40 +1,19 @@
-using Grpc.Net.Client;
-using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Shared.Services;
 using MarketData.Grpc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SharedModels = MarketData.Client.Shared.Models;
 
 namespace MarketData.Client.Grpc.Services;
 
-public class InstrumentService : IInstrumentService, IDisposable
+public class InstrumentService : IInstrumentService
 {
     private readonly ILogger<InstrumentService> _logger;
-    private readonly GrpcChannel _channel;
     private readonly ModelConfigurationService.ModelConfigurationServiceClient _client;
-
-    private readonly IDisposable? _ownedChannel; // Track whether we own the channel to dispose it if necessary
-    private bool _disposed;
-
-    public InstrumentService(IOptions<GrpcSettings> grpcSettings, ILogger<InstrumentService> logger)
-        : this(grpcSettings.Value, logger)
-    {
-    }
-
-    public InstrumentService(GrpcSettings grpcSettings, ILogger<InstrumentService> logger)
-    {
-        _logger = logger;
-        _channel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
-        _ownedChannel = _channel;
-        _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
-    }
 
     public InstrumentService(IMarketDataGrpcConnectionBuilder grpcConnection, ILogger<InstrumentService> logger)
     {
         _logger = logger;
-        _channel = grpcConnection.Channel;
-        _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
+        _client = new ModelConfigurationService.ModelConfigurationServiceClient(grpcConnection.Channel);
     }
 
     public async Task<IReadOnlyList<SharedModels.InstrumentConfig>> GetAllInstrumentsAsync(CancellationToken ct = default)
@@ -71,23 +50,5 @@ public class InstrumentService : IInstrumentService, IDisposable
         }, cancellationToken: ct);
 
         return new SharedModels.RemoveInstrumentResult(response.Removed, response.Message);
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _ownedChannel?.Dispose();
-            }
-            _disposed = true;
-        }
     }
 }

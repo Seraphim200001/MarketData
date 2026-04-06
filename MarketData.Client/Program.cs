@@ -30,10 +30,10 @@ internal class Program
                 .Get<GrpcSettings>() ?? new GrpcSettings();
 
             using var loggerFactory = new LoggerFactory();
-            using var grpcChannel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
-            using var modelConfigService = new ModelConfigService(grpcSettings, loggerFactory.CreateLogger<ModelConfigService>());
-            using var priceService = new PriceService(grpcSettings, loggerFactory.CreateLogger<PriceService>());
-            using var instrumentService = new InstrumentService(grpcSettings, loggerFactory.CreateLogger<InstrumentService>());
+            using var grpcBuilder = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
+            var modelConfigService = new ModelConfigService(grpcBuilder, loggerFactory.CreateLogger<ModelConfigService>());
+            var priceService = new PriceService(grpcBuilder, loggerFactory.CreateLogger<PriceService>());
+            var instrumentService = new InstrumentService(grpcBuilder, loggerFactory.CreateLogger<InstrumentService>());
 
             var priceStreamer = new PriceStreamer(priceService, instrumentService, loggerFactory.CreateLogger<PriceStreamer>());
 

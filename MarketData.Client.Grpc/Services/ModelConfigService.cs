@@ -1,40 +1,19 @@
-using Grpc.Net.Client;
-using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Shared.Services;
 using MarketData.Grpc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SharedModels = MarketData.Client.Shared.Models;
 
 namespace MarketData.Client.Grpc.Services;
 
-public class ModelConfigService : IModelConfigService, IDisposable
+public class ModelConfigService : IModelConfigService
 {
     private readonly ILogger<ModelConfigService> _logger;
-    private readonly GrpcChannel _channel;
     private readonly ModelConfigurationService.ModelConfigurationServiceClient _client;
-
-    private readonly IDisposable? _ownedChannel; // Track whether we own the channel to dispose it if necessary
-    private bool _disposed;
-
-    public ModelConfigService(IOptions<GrpcSettings> grpcSettings, ILogger<ModelConfigService> logger)
-        : this(grpcSettings.Value, logger)
-    {
-    }
-
-    public ModelConfigService(GrpcSettings grpcSettings, ILogger<ModelConfigService> logger)
-    {
-        _logger = logger;
-        _channel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
-        _ownedChannel = _channel;
-        _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
-    }
 
     public ModelConfigService(IMarketDataGrpcConnectionBuilder grpcConnection, ILogger<ModelConfigService> logger)
     {
         _logger = logger;
-        _channel = grpcConnection.Channel;
-        _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
+        _client = new ModelConfigurationService.ModelConfigurationServiceClient(grpcConnection.Channel);
     }
 
     public async Task<IReadOnlyList<string>> GetSupportedModelsAsync(CancellationToken ct = default)
@@ -137,23 +116,5 @@ public class ModelConfigService : IModelConfigService, IDisposable
         _logger.LogInformation("Requesting Random Additive Walk config update for instrument {Instrument} with {StepCount} steps from gRPC service.",
             instrumentName, request.WalkSteps.Count);
         await _client.UpdateRandomAdditiveWalkConfigAsync(request, cancellationToken: ct);
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _ownedChannel?.Dispose();
-            }
-            _disposed = true;
-        }
     }
 }
