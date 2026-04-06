@@ -1,5 +1,5 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Grpc;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
@@ -12,7 +12,7 @@ public class RandomMultiplicativeConfigViewModel : ModelConfigViewModelBase
     private double _standardDeviation;
     private double _mean;
 
-    public RandomMultiplicativeConfigViewModel(string instrumentName, RandomMultiplicativeConfigData config,
+    public RandomMultiplicativeConfigViewModel(string instrumentName, RandomMultiplicativeConfig config,
         IModelConfigService modelConfigService, IDialogService dialogService, ILogger<RandomMultiplicativeConfigViewModel> logger)
         : base(instrumentName, dialogService, logger)
     {

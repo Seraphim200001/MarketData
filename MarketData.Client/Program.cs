@@ -25,20 +25,21 @@ internal class Program
         {
             LogBanner();
             Log.Information("Starting Console Market Data Client");
-            
+
             var grpcSettings = configuration.GetSection(GrpcSettings.SectionName)
                 .Get<GrpcSettings>() ?? new GrpcSettings();
 
             using var loggerFactory = new LoggerFactory();
-            using var grpcChannel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
-            using var modelConfigService = new ModelConfigService(grpcChannel, loggerFactory.CreateLogger<ModelConfigService>());
-            using var priceService = new PriceService(grpcChannel, loggerFactory.CreateLogger<PriceService>());
+            using var grpcBuilder = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
+            var modelConfigService = new ModelConfigService(grpcBuilder, loggerFactory.CreateLogger<ModelConfigService>());
+            var priceService = new PriceService(grpcBuilder, loggerFactory.CreateLogger<PriceService>());
+            var instrumentService = new InstrumentService(grpcBuilder, loggerFactory.CreateLogger<InstrumentService>());
 
-            var priceStreamer = new PriceStreamer(priceService);
+            var priceStreamer = new PriceStreamer(priceService, instrumentService, loggerFactory.CreateLogger<PriceStreamer>());
 
             // Initialize gRPC connections to avoid race conditions
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
-            var grpcConnectionInitializer = new GrpcConnectionInitializer(grpcChannel);
+            using var grpcConnectionInitializer = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
             await grpcConnectionInitializer.InitializeAsync();
             Log.Information("gRPC connections ready");
 
@@ -49,8 +50,8 @@ internal class Program
                 Console.WriteLine($"Press (Ctrl+C) to exit.");
                 Console.WriteLine();
 
-                var availableInstruments = (await modelConfigService.GetAllInstrumentsAsync())
-                    .Configurations.Select(c => c.InstrumentName);
+                var availableInstruments = (await instrumentService.GetAllInstrumentsAsync())
+                    .Select(c => c.InstrumentName);
                 Console.WriteLine($"Available instruments: {string.Join(", ", availableInstruments)}");
 
                 var sep = new string('=', 30);
@@ -66,40 +67,40 @@ internal class Program
                 {
                     Console.Write("Enter instrument name: ");
                     var name = Console.ReadLine();
-                    if(string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(name))
                     {
                         Console.WriteLine("Invalid instrument name");
                         continue;
                     }
                     Console.Write("Enter tick interval (ms): ");
-                    if(!int.TryParse(Console.ReadLine(), out var tickIntervalMs))
+                    if (!int.TryParse(Console.ReadLine(), out var tickIntervalMs))
                     {
                         Console.WriteLine("Invalid tick interval");
                         continue;
                     }
                     Console.Write("Enter initial price: ");
-                    if(!double.TryParse(Console.ReadLine(), out var initialPrice))
+                    if (!double.TryParse(Console.ReadLine(), out var initialPrice))
                     {
                         Console.WriteLine("Invalid initial price");
                         continue;
                     }
-                    await modelConfigService.TryAddInstrumentAsync(name, tickIntervalMs, initialPrice);
+                    await instrumentService.TryAddInstrumentAsync(name, tickIntervalMs, initialPrice);
                 }
                 else if (input == "2")
                 {
                     Console.Write("Enter instrument name: ");
                     var name = Console.ReadLine();
-                    if(string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(name))
                     {
                         Console.WriteLine("Invalid instrument name");
                         continue;
                     }
-                    await modelConfigService.TryRemoveInstrumentAsync(name);
+                    await instrumentService.TryRemoveInstrumentAsync(name);
                 }
                 else if (input == "3")
                 {
-                    var res = await modelConfigService.GetAllInstrumentsAsync();
-                    var configs = JsonSerializer.Serialize(res.Configurations);
+                    var res = await instrumentService.GetAllInstrumentsAsync();
+                    var configs = JsonSerializer.Serialize(res, new JsonSerializerOptions { WriteIndented = true });
                     Console.WriteLine(configs);
                 }
                 else if (input == "4")

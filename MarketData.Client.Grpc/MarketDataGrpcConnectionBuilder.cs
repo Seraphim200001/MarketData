@@ -6,27 +6,40 @@ using Microsoft.Extensions.Options;
 
 namespace MarketData.Client.Grpc;
 
-public interface IGrpcConnectionInitializer
+public class MarketDataGrpcConnectionBuilder : IMarketDataGrpcConnectionBuilder, IDisposable
 {
-    Task InitializeAsync(int maxRetries = 5, int initialRetryDelayMs = 100, CancellationToken ct = default);
-}
-
-public class GrpcConnectionInitializer : IGrpcConnectionInitializer
-{
-    private readonly ILogger _logger;
+    private readonly ILogger<MarketDataGrpcConnectionBuilder> _logger;
     private readonly GrpcChannel _channel;
 
-    public GrpcConnectionInitializer(GrpcChannel channel, ILogger? logger = null)
+    public MarketDataGrpcConnectionBuilder(IOptions<GrpcSettings> grpcSettings,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+        : this(grpcSettings.Value, logger)
     {
-        _logger = logger ?? NullLogger.Instance;
-        _channel = channel;
     }
 
-    public GrpcConnectionInitializer(IOptions<GrpcSettings> grpcSettings, ILogger? logger = null)
+    public MarketDataGrpcConnectionBuilder(IOptions<GrpcSettings> grpcSettings,
+        GrpcChannelOptions channelOptions,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+        : this(grpcSettings.Value, channelOptions, logger)
     {
-        _logger = logger ?? NullLogger.Instance;
-        _channel = GrpcChannel.ForAddress(grpcSettings.Value.ServerUrl);
     }
+
+    public MarketDataGrpcConnectionBuilder(GrpcSettings settings,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+    {
+        _logger = logger ?? NullLogger<MarketDataGrpcConnectionBuilder>.Instance;
+        _channel = GrpcChannel.ForAddress(settings.ServerUrl);
+    }
+
+    public MarketDataGrpcConnectionBuilder(GrpcSettings settings,
+        GrpcChannelOptions channelOptions,
+        ILogger<MarketDataGrpcConnectionBuilder>? logger = null)
+    {
+        _logger = logger ?? NullLogger<MarketDataGrpcConnectionBuilder>.Instance;
+        _channel = GrpcChannel.ForAddress(settings.ServerUrl, channelOptions);
+    }
+
+    public GrpcChannel Channel { get => _channel; }
 
     public async Task InitializeAsync(int maxRetries = 5, int initialRetryDelayMs = 100, 
         CancellationToken ct = default)
@@ -61,5 +74,10 @@ public class GrpcConnectionInitializer : IGrpcConnectionInitializer
 
         _logger.LogError(lastException, "Failed to establish gRPC connection after {MaxRetries} attempts", maxRetries);
         throw lastException ?? new TimeoutException($"Failed to establish gRPC connection after {maxRetries} attempts");
+    }
+
+    public void Dispose()
+    {
+        _channel.Dispose();
     }
 }

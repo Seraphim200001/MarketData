@@ -1,12 +1,10 @@
-﻿using Grpc.Net.Client;
 using MarketData.Client.Grpc;
 using MarketData.Client.Grpc.Configuration;
 using MarketData.Client.Grpc.Services;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace MarketData.Wpf.Client;
@@ -21,13 +19,11 @@ internal static class Bootstrapper
 
         services.AddOptions<GrpcSettings>()
             .BindConfiguration(GrpcSettings.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
         services.AddOptions<CandleChartSettings>()
             .BindConfiguration(CandleChartSettings.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
         services.ConfigureGrpcClients();
 
@@ -45,35 +41,26 @@ internal static class Bootstrapper
     {
         Logger.Information("Configuring gRPC clients with server URL from configuration");
 
-        services.AddSingleton(sp => GrpcChannel.ForAddress(sp.GetGrpcServerUrl(), DefaultChannelOptions));
-
-        services.AddSingleton<IGrpcConnectionInitializer>(sp =>
-            new GrpcConnectionInitializer(
-                sp.GetRequiredService<GrpcChannel>(),
-                sp.GetRequiredService<ILogger<GrpcConnectionInitializer>>()));
-
-        services.AddSingleton<IPriceService, PriceService>(sp => 
-            new PriceService(
-                sp.GetRequiredService<GrpcChannel>(),
-                sp.GetRequiredService<ILogger<PriceService>>()));
-
-        services.AddSingleton<IModelConfigService, ModelConfigService>(sp =>
-            new ModelConfigService(
-                sp.GetRequiredService<GrpcChannel>(),
-                sp.GetRequiredService<ILogger<ModelConfigService>>()));
+        services
+            .AddGrpcConnections<IMarketDataGrpcConnectionBuilder, MarketDataGrpcConnectionBuilder>(
+                channelOptions: new()
+                {
+                    InitialReconnectBackoff = TimeSpan.FromMilliseconds(100),
+                    MaxReconnectBackoff = TimeSpan.FromSeconds(1)
+                })
+            .With<IPriceService, PriceService>()
+            .With<IInstrumentService, InstrumentService>()
+            .With<IModelConfigService, ModelConfigService>();
 
         return services;
     }
-
-    internal static string GetGrpcServerUrl(this IServiceProvider sp) => 
-        sp.GetRequiredService<IOptions<GrpcSettings>>().Value.ServerUrl;
 
     internal static void InitializeGrpcConnections(IServiceProvider serviceProvider)
     {
         var dialogService = serviceProvider.GetRequiredService<IDialogService>();
         Logger.Information("Initializing gRPC connection (to avoid race conditions with lazy-initialization)");
 
-        var connectionInitializer = serviceProvider.GetRequiredService<IGrpcConnectionInitializer>();
+        var connectionInitializer = serviceProvider.GetRequiredService<IMarketDataGrpcConnectionBuilder>();
 
         // Run on thread pool to avoid sync context deadlock
         var initTask = Task.Run(async () => await connectionInitializer.InitializeAsync());
@@ -98,12 +85,6 @@ internal static class Bootstrapper
         }
     }
 
-
-    private static readonly GrpcChannelOptions DefaultChannelOptions = new()
-    {
-        InitialReconnectBackoff = TimeSpan.FromMilliseconds(100),
-        MaxReconnectBackoff = TimeSpan.FromSeconds(1)
-    };
 
     internal static void LogBanner()
     {

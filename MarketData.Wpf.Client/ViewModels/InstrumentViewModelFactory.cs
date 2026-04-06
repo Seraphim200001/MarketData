@@ -1,5 +1,4 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Client.Wpf.Services;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

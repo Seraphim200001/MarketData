@@ -1,0 +1,60 @@
+using Grpc.Net.Client;
+using MarketData.Client.Grpc.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+
+namespace MarketData.Client.Grpc;
+
+public sealed class GrpcServicesBuilder
+{
+    private readonly IServiceCollection _services;
+    private readonly Type _connectionType;
+
+    internal GrpcServicesBuilder(IServiceCollection services, Type connectionType)
+    {
+        _services = services;
+        _connectionType = connectionType;
+    }
+
+    /// <summary>
+    /// Registers <typeparamref name="TImpl"/> as a singleton for <typeparamref name="TService"/>.
+    /// The shared gRPC connection is automatically injected as the first constructor argument;
+    /// all remaining parameters (e.g. ILogger&lt;TImpl&gt;) are resolved from DI.
+    /// </summary>
+    public GrpcServicesBuilder With<TService, TImpl>()
+        where TService : class
+        where TImpl : class, TService
+    {
+        _services.AddSingleton<TService>(sp =>
+            ActivatorUtilities.CreateInstance<TImpl>(
+                sp,
+                sp.GetRequiredService(_connectionType)));
+        return this;
+    }
+}
+
+public static class GrpcServiceCollectionExtensions
+{
+    /// <summary>
+    /// Registers <typeparamref name="TImpl"/> as the <typeparamref name="TConnectionBuilder"/> singleton.
+    /// Pass <paramref name="settings"/> directly for console / test scenarios; omit it to resolve
+    /// <see cref="IOptions{GrpcSettings}"/> from DI (e.g. WPF / ASP.NET apps).
+    /// </summary>
+    public static GrpcServicesBuilder AddGrpcConnections<TConnectionBuilder, TImpl>(
+        this IServiceCollection services,
+        GrpcSettings? settings = null,
+        GrpcChannelOptions? channelOptions = null)
+                                                            where TConnectionBuilder : class
+                                                            where TImpl : class, TConnectionBuilder
+    {
+        services.AddSingleton<TConnectionBuilder>(sp =>
+        {
+            var resolvedSettings = settings ?? sp.GetRequiredService<IOptions<GrpcSettings>>().Value;
+            return channelOptions is null
+                ? ActivatorUtilities.CreateInstance<TImpl>(sp, resolvedSettings)
+                : ActivatorUtilities.CreateInstance<TImpl>(sp, resolvedSettings, channelOptions);
+        });
+
+        return new GrpcServicesBuilder(services, typeof(TConnectionBuilder));
+    }
+}

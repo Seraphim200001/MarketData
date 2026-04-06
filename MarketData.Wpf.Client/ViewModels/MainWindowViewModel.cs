@@ -1,4 +1,4 @@
-using MarketData.Client.Grpc.Services;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Shared;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,7 @@ public class MainWindowViewModel : ViewModelBase
 {
     private readonly ILogger<MainWindowViewModel> _logger;
     private readonly InstrumentViewModelFactory _instrumentViewModelFactory;
-    private readonly IModelConfigService _modelConfigService;
+    private readonly IInstrumentService _instrumentService;
     private readonly IDialogService _dialogService;
 
     private string _title = "Market Data Client";
@@ -20,12 +20,12 @@ public class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(
         InstrumentViewModelFactory instrumentViewModelFactory,
-        IModelConfigService modelConfigService,
+        IInstrumentService instrumentService,
         IDialogService dialogService,
         ILogger<MainWindowViewModel> logger)
     {
         _instrumentViewModelFactory = instrumentViewModelFactory;
-        _modelConfigService = modelConfigService;
+        _instrumentService = instrumentService;
         _dialogService = dialogService;
         _logger = logger;
         _tabs = [];
@@ -64,8 +64,8 @@ public class MainWindowViewModel : ViewModelBase
         try
         {
             _logger.LogInformation("Fetching instrument configurations from gRPC service");
-            var response = await _modelConfigService.GetAllInstrumentsAsync();
-            var instrumentNames = response.Configurations.Select(c => c.InstrumentName);
+            var response = await _instrumentService.GetAllInstrumentsAsync();
+            var instrumentNames = response.Select(c => c.InstrumentName);
             _logger.LogInformation("Received {Count} instrument configurations", instrumentNames.Count());
 
             var selectedInstrument = await _dialogService.ShowInstrumentSelectorAsync(instrumentNames);
