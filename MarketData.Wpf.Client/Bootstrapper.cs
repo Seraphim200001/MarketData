@@ -5,8 +5,6 @@ using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Serilog;
 
 namespace MarketData.Wpf.Client;
@@ -21,13 +19,11 @@ internal static class Bootstrapper
 
         services.AddOptions<GrpcSettings>()
             .BindConfiguration(GrpcSettings.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
         services.AddOptions<CandleChartSettings>()
             .BindConfiguration(CandleChartSettings.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .ValidateDataAnnotations();
 
         services.ConfigureGrpcClients();
 
