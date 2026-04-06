@@ -39,7 +39,7 @@ internal class Program
 
             // Initialize gRPC connections to avoid race conditions
             Log.Information("Initializing gRPC connections to {ServerUrl}", grpcSettings.ServerUrl);
-            var grpcConnectionInitializer = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
+            using var grpcConnectionInitializer = new MarketDataGrpcConnectionBuilder(grpcSettings, loggerFactory.CreateLogger<MarketDataGrpcConnectionBuilder>());
             await grpcConnectionInitializer.InitializeAsync();
             Log.Information("gRPC connections ready");
 
