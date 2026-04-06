@@ -71,9 +71,15 @@ public class PriceStreamer
                 Console.WriteLine("No instrument specified.");
                 continue;
             }
+
+            input = nullableInput.Trim();
+            if (!availableInstruments.Contains(input, StringComparer.OrdinalIgnoreCase))
+            {
+                Console.WriteLine($"Instrument '{input}' is not in the available list.");
+            }
         } while (!availableInstruments.Contains(input, StringComparer.OrdinalIgnoreCase));
 
-        return input.Trim();
+        return input;
     }
 
     private static CancellationTokenSource SetupCtsAndEscape()
