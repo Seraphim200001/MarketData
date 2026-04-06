@@ -14,6 +14,7 @@ public class InstrumentService : IInstrumentService, IDisposable
     private readonly GrpcChannel _channel;
     private readonly ModelConfigurationService.ModelConfigurationServiceClient _client;
 
+    private readonly IDisposable? _ownedChannel; // Track whether we own the channel to dispose it if necessary
     private bool _disposed;
 
     public InstrumentService(IOptions<GrpcSettings> grpcSettings, ILogger<InstrumentService> logger)
@@ -25,6 +26,7 @@ public class InstrumentService : IInstrumentService, IDisposable
     {
         _logger = logger;
         _channel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
+        _ownedChannel = _channel;
         _client = new ModelConfigurationService.ModelConfigurationServiceClient(_channel);
     }
 
@@ -83,7 +85,7 @@ public class InstrumentService : IInstrumentService, IDisposable
         {
             if (disposing)
             {
-                _channel?.Dispose();
+                _ownedChannel?.Dispose();
             }
             _disposed = true;
         }

@@ -15,6 +15,7 @@ public class PriceService : IPriceService, IDisposable
     private readonly ILogger<PriceService> _logger;
     private readonly GrpcChannel _channel;
     private readonly MarketDataService.MarketDataServiceClient _client;
+    private readonly IDisposable? _ownedChannel; // Track whether we own the channel to dispose it if necessary
 
     private bool _disposed;
 
@@ -27,6 +28,7 @@ public class PriceService : IPriceService, IDisposable
     {
         _logger = logger;
         _channel = GrpcChannel.ForAddress(grpcSettings.ServerUrl);
+        _ownedChannel = _channel;
         _client = new MarketDataService.MarketDataServiceClient(_channel);
     }
 
@@ -87,7 +89,7 @@ public class PriceService : IPriceService, IDisposable
         {
             if (disposing)
             {
-                _channel?.Dispose();
+                _ownedChannel?.Dispose();
             }
             _disposed = true;
         }
