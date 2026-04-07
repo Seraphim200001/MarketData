@@ -1,6 +1,6 @@
-using MarketData.Client.Grpc.Services;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Client.Wpf.Services;
-using MarketData.Grpc;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.ViewModels.ModelConfigs;
 using MarketData.Wpf.Shared;
@@ -19,7 +19,7 @@ public class ModelConfigViewModel : ViewModelBase
     private readonly string _instrument;
     private readonly string[] _supportedModels;
 
-    private ConfigurationsResponse _configs;
+    private InstrumentConfig _configs;
 
     private string _activeModel;
     private int _tickIntervalMs;
@@ -30,14 +30,14 @@ public class ModelConfigViewModel : ViewModelBase
 
     public ModelConfigViewModel(
         string instrument,
-        ConfigurationsResponse config,
-        SupportedModelsResponse supportedModels,
+        InstrumentConfig config,
+        IReadOnlyList<string> supportedModels,
         IModelConfigService modelConfigService,
         IDialogService dialogService,
         ILoggerFactory loggerFactory)
     {
         _instrument = instrument;
-        _supportedModels = supportedModels.SupportedModels.ToArray();
+        _supportedModels = supportedModels.ToArray();
         _configs = config;
         _activeModel = config.ActiveModel;
         _tickIntervalMs = config.TickIntervalMs;

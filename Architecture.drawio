@@ -80,10 +80,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="gYUl0khqxb1LeJAdZpYp-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="MarketData.Client.Grpc" vertex="1">
-          <mxGeometry height="35" width="145" x="304.5" y="608" as="geometry" />
+          <mxGeometry height="32" width="145" x="304.5" y="608" as="geometry" />
         </mxCell>
         <mxCell id="gYUl0khqxb1LeJAdZpYp-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="MarketData.Client.Rest*" vertex="1">
-          <mxGeometry height="35" width="145" x="137" y="608" as="geometry" />
+          <mxGeometry height="32" width="145" x="137" y="608" as="geometry" />
         </mxCell>
         <mxCell id="gYUl0khqxb1LeJAdZpYp-11" edge="1" parent="1" source="gYUl0khqxb1LeJAdZpYp-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="5tUappil_dht_1FT31QH-13">
           <mxGeometry relative="1" as="geometry" />

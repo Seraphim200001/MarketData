@@ -1,8 +1,7 @@
 using FancyCandles;
 using Grpc.Core;
-using MarketData.Client.Grpc.Services;
-using MarketData.Client.Wpf.Services;
-using MarketData.Grpc;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.FancyCandlesImplementations;
 using MarketData.Wpf.Client.Services;
 using MarketData.Wpf.Client.Views;
@@ -174,9 +173,7 @@ public class InstrumentViewModel : ViewModelBase
         try
         {
             _logger.LogInformation("Starting price stream for instrument {Instrument}", _instrument);
-            using var call = _priceService.SubscribeToPrices(Instrument, _cancellationTokenSource.Token);
-
-            await foreach (var priceUpdate in call.ResponseStream.ReadAllAsync(_cancellationTokenSource.Token))
+            await foreach (var priceUpdate in _priceService.SubscribeToPricesAsync(Instrument, _cancellationTokenSource.Token))
             {
                 _logger.LogTrace("Received price update for instrument {Instrument}: {Price} at {Timestamp}",
                     _instrument, priceUpdate.Value, new DateTime(priceUpdate.Timestamp));
@@ -245,13 +242,13 @@ public class InstrumentViewModel : ViewModelBase
         var historicalData = await _priceService.GetHistoricalDataAsync(Instrument, start.Ticks, now.Ticks, ct);
 
         _logger.LogInformation("Received historical data for instrument {Instrument} with {Count} price points",
-            _instrument, historicalData.Prices.Count);
+            _instrument, historicalData.Count);
 
         int candlesCreated = 0;
         PriceUpdate? lastPrice = null;
         using(LogContext.PushProperty("InitializingCandleChart", true))
         {
-            foreach (var dataPoint in historicalData.Prices.OrderBy(x => x.Timestamp))
+            foreach (var dataPoint in historicalData.OrderBy(x => x.Timestamp))
             {
                 if (await UpdateCandleChartAsync(dataPoint))
                     candlesCreated++;

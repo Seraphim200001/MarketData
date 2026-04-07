@@ -1,5 +1,5 @@
-using MarketData.Client.Grpc.Services;
-using MarketData.Grpc;
+using MarketData.Client.Shared.Models;
+using MarketData.Client.Shared.Services;
 using MarketData.Wpf.Client.Services;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
@@ -15,7 +15,7 @@ public class MeanRevertingConfigViewModel : ModelConfigViewModelBase
     private double _sigma;
     private double _dt;
 
-    public MeanRevertingConfigViewModel(string instrumentName, MeanRevertingConfigData config, 
+    public MeanRevertingConfigViewModel(string instrumentName, MeanRevertingConfig config,
         IModelConfigService modelConfigService, IDialogService dialogService, ILogger<MeanRevertingConfigViewModel> logger)
         : base(instrumentName, dialogService, logger)
     {
